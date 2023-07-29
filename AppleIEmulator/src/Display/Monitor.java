@@ -5,17 +5,20 @@ import java.awt.*;
 
 public class Monitor extends JPanel{
 
-	    private static final int CELL_SIZE = 5;
-	    private static final int GRID_WIDTH = 200;
-	    private static final int GRID_HEIGHT = 168;
+	    private static final int CELL_SIZE = 3;
+	    private static final int GRID_WIDTH = 240;
+	    private static final int GRID_HEIGHT = 192;
 	    
 	    private int iColumnShift = 0;
 	    private int iRowShift = 0;
+	    private int iCharsOnLine = 0;
+	    private int iLinesOnScreen = 1;
 
 	    private boolean[][] pixelGrid;
 
-	    public Monitor() {
-	        pixelGrid = new boolean[GRID_HEIGHT][GRID_WIDTH];
+	    public Monitor() throws InterruptedException 
+	    {
+	    	pixelGrid = new boolean[GRID_HEIGHT][GRID_WIDTH];
 	        
 	        for (int i = 0; i < GRID_HEIGHT; i++) 
 	        {
@@ -28,14 +31,9 @@ public class Monitor extends JPanel{
 	            
 	        }
 	        
-	        drawCharacter(0);
-	        drawCharacter(1);
-	        
-	        //pixelGrid[100][100]= true;
-	        
 	    }
 	    
-	    public void drawCharacter(int Chara) {
+	    public void drawCharacter(int Chara) throws InterruptedException {
 	    	CharacterGenerator chars = new CharacterGenerator();
 	    	for (int i = 0; i < 8; i++) 
 	        {
@@ -49,7 +47,27 @@ public class Monitor extends JPanel{
 	            
 	        }
 	    	
-	    	iRowShift = iRowShift + 6;
+	    	iCharsOnLine++;
+	    	
+	    	if(iCharsOnLine == 40)
+	    	{
+	    		iColumnShift = iColumnShift + 8;
+	    		iRowShift = 0;
+	    		iCharsOnLine = 0;
+	    		iLinesOnScreen++;
+	    		
+	    	}
+	    	else
+	    	{
+	    		iRowShift = iRowShift + 6;
+	    	}
+	    	
+	    	if(iLinesOnScreen == 24)
+	    	{
+	    		
+	    	}
+	    	
+	    	System.out.println(iColumnShift);
 	    	
 	    }
 
@@ -77,19 +95,30 @@ public class Monitor extends JPanel{
 	        }
 	        
 	    }
+	    
+	    
 
-	    public static void main(String[] args) {
-	        JFrame frame = new JFrame("Pixel Grid");
+	    public static void main(String[] args) throws InterruptedException {
+	        JFrame frame = new JFrame("Apple 1 Emulator");
 	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	        frame.setResizable(false);
 
 	        Monitor pixelGridPanel = new Monitor();
 	        
 	        pixelGridPanel.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE));
-	        
-	        frame.getContentPane().add(pixelGridPanel);
-	        frame.pack();
-	        frame.setVisible(true);
+
+
+				frame.getContentPane().add(pixelGridPanel);
+				frame.pack();
+				frame.setVisible(true);
+				
+				for (int i = 0; i < 64; i++) 
+				{
+					//Thread.sleep(200);
+					pixelGridPanel.drawCharacter(i);
+					frame.repaint();
+				}
+
 	    }
 	
 }
