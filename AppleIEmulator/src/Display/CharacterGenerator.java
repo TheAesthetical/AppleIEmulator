@@ -2,7 +2,7 @@ package Display;
 
 public class CharacterGenerator {
 
-	public boolean[][][] CharacterROMS = {
+	public final boolean[][][] CharacterROMS = {
 
 			//@ - 000000
 			{ 	{false , false , false , false , false} , 
