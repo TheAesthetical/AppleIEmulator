@@ -13,6 +13,8 @@ class Register {
 }
 
 public class CPU {
+	
+	
 
 	public static void main(String[] args) {
 		byte Accumulator = (byte) 0b10000000;

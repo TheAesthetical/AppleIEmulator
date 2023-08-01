@@ -1,8 +1,8 @@
-package Display;
+package Terminal;
 
 public class CharacterGenerator {
 
-	public final boolean[][][] CharacterROMS = {
+	public final boolean[][][] CharacterROM = {
 
 			//@ - 000000
 			{ 	{false , false , false , false , false} , 
@@ -777,5 +777,11 @@ public class CharacterGenerator {
 			}
 
 	};
+
+	public boolean[][][] getCharacterROM() 
+	{
+		return CharacterROM;
+
+	}
 
 }
