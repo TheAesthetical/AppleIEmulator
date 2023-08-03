@@ -11,18 +11,10 @@ public class Main {
 	public static void main(String[] args) throws InterruptedException {
 		Monitor Screen = new Monitor(3 , "Apple 1 Emulator");
 			
-		for (int i = 0; i < 64; i++) 
+		for (int i = 32; i <= 95; i++) 
 		{
-			Thread.sleep(2);
+			Thread.sleep(15);
 			Screen.drawNextCharacter(i);
-			
-			if(i == 4 ||i == 52)
-			{
-				Screen.carriageReturn();
-				Screen.carriageReturn();
-				Screen.carriageReturn();
-				
-			}
 			
 		} 
 

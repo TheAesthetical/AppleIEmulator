@@ -12,6 +12,9 @@ public class Monitor extends JPanel implements Runnable{
 	private final CharacterGenerator CharacterSet = new CharacterGenerator();
 	private final int iCharHeight = CharacterSet.getCharacterROM()[0].length;
 	private final int iCharWidth = CharacterSet.getCharacterROM()[0][0].length;
+	
+	private final int iCursorIndex = 64;
+	private final int iSpaceIndex = 32;
 
 	private final int iTotalCharsOnLine = GRID_WIDTH / (iCharWidth + 1);
 	private final int iTotalLinesOnScreen = (GRID_HEIGHT / iCharHeight) + 1;
@@ -74,7 +77,7 @@ public class Monitor extends JPanel implements Runnable{
 
 		for (int i = 0; i < iTotalCharsOnLine - iCurrentCharsOnLine; i++) 
 		{
-			drawNextCharacter(32);
+			drawNextCharacter(iSpaceIndex);
 
 		}
 
@@ -136,13 +139,15 @@ public class Monitor extends JPanel implements Runnable{
 	}
 
 	private void displayCharacter(int iReqCharIndex) {
+		
+		int iCharIndex = CharacterSet.convertCharASCIIIndex(iReqCharIndex);
 
 		for (int i = 0; i < iCharHeight; i++) 
 		{
 
 			for (int j = 0; j < iCharWidth; j++) 
 			{
-				bPixelGrid[i + iColumnShift][j + iRowShift] = CharacterSet.getCharacterROM()[iReqCharIndex][i][j];
+				bPixelGrid[i + iColumnShift][j + iRowShift] = CharacterSet.getCharacterROM()[iCharIndex][i][j];
 
 			}
 
@@ -159,11 +164,11 @@ public class Monitor extends JPanel implements Runnable{
 
 			try {
 
-				displayCharacter(0);
+				displayCharacter(iCursorIndex);
 				Thread.sleep(iCursorSleepTimeMS);
 				repaint();
 
-				displayCharacter(32);
+				displayCharacter(iSpaceIndex);
 				Thread.sleep(iCursorSleepTimeMS);
 				repaint();
 

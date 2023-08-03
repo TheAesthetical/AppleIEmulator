@@ -777,7 +777,52 @@ public class CharacterGenerator {
 			}
 
 	};
+	
+	public int convertCharASCIIIndex(int iReqCharIndex) 
+	{
+		String szReqCharIndexBinary;
+		int iASCIICharIndex;
+		
+		szReqCharIndexBinary = Integer.toBinaryString(iReqCharIndex);
+		
+		int iOGReqCharIndexBinaryLength = szReqCharIndexBinary.length();
+		
+		System.out.println("1. " + szReqCharIndexBinary);
+		
+		for (int i = 0; i < (7 - iOGReqCharIndexBinaryLength); i++) 
+		{
+			szReqCharIndexBinary = 0 + szReqCharIndexBinary;
+			
+		}
+		
+		System.out.println("2. " + szReqCharIndexBinary);
+		
+		szReqCharIndexBinary = szReqCharIndexBinary.charAt(0) + szReqCharIndexBinary.substring(2 , 7);
+		
+		System.out.println("3. " + szReqCharIndexBinary);
+		
+		if(szReqCharIndexBinary.charAt(0) == '1')
+		{
+			szReqCharIndexBinary = szReqCharIndexBinary.substring(1 , 6);
+			szReqCharIndexBinary = 0 + szReqCharIndexBinary.substring(0);
+			
+		}
+		else if((szReqCharIndexBinary.charAt(0) == '0'))
+		{
+			szReqCharIndexBinary = szReqCharIndexBinary.substring(1 , 6);
+			szReqCharIndexBinary = 1 + szReqCharIndexBinary.substring(0);
+			
+		}
+		
+		iASCIICharIndex = Integer.parseInt(szReqCharIndexBinary , 2);  
+		
+		System.out.println("4. " + szReqCharIndexBinary + " " + iASCIICharIndex);
+		
+		return iASCIICharIndex;
+		
+	}
 
+	//By ASCII Code
 	public boolean[][][] getCharacterROM() 
 	{
 		return CharacterROM;
