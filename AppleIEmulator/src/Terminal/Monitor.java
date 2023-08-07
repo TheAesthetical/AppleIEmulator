@@ -33,14 +33,22 @@ public class Monitor extends JPanel implements Runnable{
 	public Monitor(int iReqCellSize , String szWindowTitle) throws InterruptedException 
 	{
 		CELL_SIZE = iReqCellSize;
-
+		
 		JFrame Window = new JFrame(szWindowTitle);
+
+		String szProjectFolderPath = System.getProperty("user.dir");
+        String[] szPathComponents = szProjectFolderPath.split("\\\\");
+        String szProjectFolderName = szPathComponents[szPathComponents.length - 1];
+        
+		ImageIcon WindowFavicon = new ImageIcon(szProjectFolderName + "\\windowfavicon.png");
+		Window.setIconImage(WindowFavicon.getImage());
+		
 		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.setResizable(false);
-
+		
 		this.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE , GRID_HEIGHT * CELL_SIZE));
-
 		Window.getContentPane().add(this);
+		
 		Window.pack();
 		Window.setVisible(true);
 

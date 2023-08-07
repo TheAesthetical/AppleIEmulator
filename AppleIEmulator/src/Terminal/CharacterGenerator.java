@@ -2,7 +2,7 @@ package Terminal;
 
 public class CharacterGenerator {
 
-	public final boolean[][][] CharacterROM = {
+	private final boolean[][][] CharacterROM = {
 
 			//@ - 000000
 			{ 	{false , false , false , false , false} , 
@@ -787,7 +787,7 @@ public class CharacterGenerator {
 		
 		int iOGReqCharIndexBinaryLength = szReqCharIndexBinary.length();
 		
-		System.out.println("1. " + szReqCharIndexBinary);
+		//System.out.println("1. " + szReqCharIndexBinary);
 		
 		for (int i = 0; i < (7 - iOGReqCharIndexBinaryLength); i++) 
 		{
@@ -795,11 +795,11 @@ public class CharacterGenerator {
 			
 		}
 		
-		System.out.println("2. " + szReqCharIndexBinary);
+		//System.out.println("2. " + szReqCharIndexBinary);
 		
 		szReqCharIndexBinary = szReqCharIndexBinary.charAt(0) + szReqCharIndexBinary.substring(2 , 7);
 		
-		System.out.println("3. " + szReqCharIndexBinary);
+		//System.out.println("3. " + szReqCharIndexBinary);
 		
 		if(szReqCharIndexBinary.charAt(0) == '1')
 		{
@@ -816,7 +816,7 @@ public class CharacterGenerator {
 		
 		iASCIICharIndex = Integer.parseInt(szReqCharIndexBinary , 2);  
 		
-		System.out.println("4. " + szReqCharIndexBinary + " " + iASCIICharIndex);
+		//System.out.println("4. " + szReqCharIndexBinary + " " + iASCIICharIndex);
 		
 		return iASCIICharIndex;
 		
