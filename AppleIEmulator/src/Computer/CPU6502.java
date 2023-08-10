@@ -1,15 +1,38 @@
 package Computer;
 
-@SuppressWarnings("unused")
-public class CPU implements Runnable{
+class Opcode {
+	
+	private byte Operation;
+	private byte AddressingMode;
+	
+	private int iClockCycles;
+	
+	public Opcode(byte Operation , byte AddressingMode , int iClockCycles)
+	{
+		Operation = this.Operation;
+		AddressingMode = this.AddressingMode;
+		
+		iClockCycles = this.iClockCycles;
+		
+	}
+	
+}
+
+
+public class CPU6502 implements Runnable{
 	
 	private Thread CPUThread;
+	
+	private final int iDataBus = 8;
+	private final int iAddressBus = 16;
 
 	//!!!DELETE STATIC MODIFIERS AFTER COMPLETION!!!
+	
+	private RAM DRAM;
 
 	private byte Accumulator = (byte) 0x00;
 
-	private short ProgramCounter = (byte) 0xFFFF;
+	private short ProgramCounter = (byte) 0x0000;
 	private static byte StackPointer = (byte) 0x00;
 
 	private byte IndexX = (byte) 0x00;
@@ -20,9 +43,13 @@ public class CPU implements Runnable{
 	private boolean bInterrupt = false;
 	private boolean bNonMaskableInterrupt = false;
 
-	public CPU()
+	public CPU6502(RAM ComputerRAM)
 	{
+		DRAM = ComputerRAM;
+		
 		start();
+		
+		//Create opcodes in the constructor
 		
 	}
 	
@@ -102,6 +129,7 @@ public class CPU implements Runnable{
 			StatusFlags = setBit(StatusFlags , 4 , bBit);
 			
 			break;
+			//UNUSED
 		case('-'):
 			StatusFlags = setBit(StatusFlags , 5 , bBit);
 			
