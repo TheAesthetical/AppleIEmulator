@@ -3,7 +3,13 @@ package Terminal;
 import javax.swing.*;
 import java.awt.*;
 
+import Main.Utilities;
+
 public class Monitor extends JPanel implements Runnable{
+	
+	private static final long serialVersionUID = 8168022962633428025L;
+
+	private Utilities Utils = new Utilities();
 
 	//Calculated dimensions of the Apple 1 Terminal - they don't change hence final modifier
 	private final int GRID_WIDTH = 240;
@@ -38,12 +44,8 @@ public class Monitor extends JPanel implements Runnable{
 		CELL_SIZE = iReqCellSize;
 		
 		JFrame Window = new JFrame(szWindowTitle);
-
-		String szProjectFolderPath = System.getProperty("user.dir");
-        String[] szPathComponents = szProjectFolderPath.split("\\\\");
-        String szProjectFolderName = szPathComponents[szPathComponents.length - 1];
         
-		ImageIcon WindowFavicon = new ImageIcon(szProjectFolderName + "\\windowfavicon.png");
+		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
 		Window.setIconImage(WindowFavicon.getImage());
 		
 		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

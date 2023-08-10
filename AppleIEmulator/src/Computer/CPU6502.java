@@ -43,13 +43,17 @@ public class CPU6502 implements Runnable{
 	private boolean bInterrupt = false;
 	private boolean bNonMaskableInterrupt = false;
 
+	//===================================================================
+	//Runtime stuff
+	//===================================================================
+	
 	public CPU6502(RAM ComputerRAM)
 	{
 		DRAM = ComputerRAM;
 		
 		start();
 		
-		//Create opcodes in the constructor
+		//Create opcodes in the constructor using inner class matrix
 		
 	}
 	
@@ -64,43 +68,42 @@ public class CPU6502 implements Runnable{
 	public void run() 
 	{
 		setStatusFlag('n',true);
-		setStatusFlag('o',true);
-		setStatusFlag('b',true);
+//		setStatusFlag('o',true);
+//		setStatusFlag('b',true);
 		setStatusFlag('d',true);
-		setStatusFlag('i',true);
+//		setStatusFlag('i',true);
 		setStatusFlag('z',true);
-		setStatusFlag('-',true);
-		setStatusFlag('c',true);
-		System.out.println(toUnsignedByte(StatusFlags));
+//		setStatusFlag('-',true);
+//		setStatusFlag('c',true);
+//		System.out.println(Byte.toUnsignedInt(StatusFlags));
+		System.out.println(getStatusFlag('-'));
 		
 	}
 	
-	private byte setBit(byte Word, int iBitPosition , boolean bBitValue) 
+	//===================================================================
+	//Status Flag Register
+	//===================================================================
+	
+	private byte setBit(byte BinaryWord, int iBitPosition , boolean bBitValue) 
 	{
 		if(bBitValue == true)
 		{
-			Word |= (byte) (0x00 + Math.pow(2 , iBitPosition));
+			BinaryWord |= (byte) (0x00 + Math.pow(2 , iBitPosition));
 			
 		}
 		else
 		{
-			Word &= (byte) (0xFF - Math.pow(2 , iBitPosition));
+			BinaryWord &= (byte) (0xFF - Math.pow(2 , iBitPosition));
 			
 		}
 		
-		return Word;
+		return BinaryWord;
 		
 	}
-
-	private int toUnsignedByte (byte ByteValue) 
-	{
-		return ByteValue & 0xFF;
-
-	}
-
-	private int toUnsignedShort (short ShortValue) 
-	{
-		return ShortValue & 0xFFFF;
+	
+	private boolean getBit(byte BinaryWord, int iBitPosition) 
+	{		
+		 return ((BinaryWord >> iBitPosition) & 1) == 1;
 
 	}
 
@@ -142,6 +145,43 @@ public class CPU6502 implements Runnable{
 			StatusFlags = setBit(StatusFlags , 7 , bBit);
 			
 			break;
+		
+		}
+
+	}
+	
+	private boolean getStatusFlag(char chFlag)
+	{
+		chFlag = Character.toUpperCase(chFlag);
+
+		switch(chFlag) {
+		case('C'):
+			return getBit(StatusFlags , 0);
+			
+		case('Z'):
+			return getBit(StatusFlags , 1);
+			
+		case('I'):
+			return getBit(StatusFlags , 2);
+			
+		case('D'):
+			return getBit(StatusFlags , 3);
+			
+		case('B'):
+			return getBit(StatusFlags , 4);
+			
+			//UNUSED
+		case('-'):
+			return getBit(StatusFlags , 5);
+			
+		case('O'):
+			return getBit(StatusFlags , 6);
+			
+		case('N'):
+			return getBit(StatusFlags , 7);
+		
+		default:
+			return false;
 		
 		}
 

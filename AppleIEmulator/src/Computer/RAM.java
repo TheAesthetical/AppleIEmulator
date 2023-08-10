@@ -4,11 +4,9 @@ public class RAM {
 	
 	private byte[] ComputerRAM;
 	
-	//C R U D
-	
-	public RAM(int iWordSize) 
+	public RAM(int iAddressBusWidth , ROM BootstrapROM) 
 	{
-		ComputerRAM = new byte[((int) Math.pow(2 , iWordSize))];
+		ComputerRAM = new byte[((int) Math.pow(2 , iAddressBusWidth))];
 		
 		for (int i = 0; i < ComputerRAM.length; i++) 
 		{
@@ -16,11 +14,13 @@ public class RAM {
 			
 		}
 		
+		bootstrapROM(BootstrapROM , (short) 0xFF00);
+		
 	}
 	
 	public void updateMemoryLocation(short MemoryLocation , byte Data) 
 	{
-		ComputerRAM[MemoryLocation] = Data;
+		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = Data;
 		
 	}
 	
@@ -28,7 +28,7 @@ public class RAM {
 	{
 		byte DataAtLocation;
 		
-		DataAtLocation = ComputerRAM[MemoryLocation];
+		DataAtLocation = ComputerRAM[Short.toUnsignedInt(MemoryLocation)];
 		
 		return DataAtLocation;
 		
@@ -36,12 +36,21 @@ public class RAM {
 	
 	public void resetMemoryLocation(short MemoryLocation) 
 	{	
-		ComputerRAM[MemoryLocation] = 0x00;
+		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = 0x00;
 		
 	}
 	
-	public void romBootstrapper() 
+	public void bootstrapROM(ROM LoadROM , short StartMemoryLocation) 
 	{	
+		ROM ComputerROM = LoadROM;
+		
+		for (int i = 0; i < ComputerROM.getComputerROM().length; i++) 
+		{
+			ComputerRAM[i + Short.toUnsignedInt(StartMemoryLocation)] = ComputerROM.getComputerROM()[i];
+				
+		}
+		
+		//System.out.println(Byte.toUnsignedInt(ComputerRAM[0xFF00]));
 		
 	}
 
