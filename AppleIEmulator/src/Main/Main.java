@@ -5,14 +5,20 @@ import Terminal.Monitor;
 
 public class Main {
 
+	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws InterruptedException {
 		Monitor Screen = new Monitor(3 , "Apple 1 Emulator - PROTOTYPE - ");
 		ROM MemoryROM = new ROM(8 , "ROM4");
 		RAM MemoryRAM = new RAM(16 , MemoryROM);
 		CPU6502 CPU = new CPU6502(MemoryRAM);
 		
+        Thread Terminal = new Thread(Screen);
+        Terminal.sleep(10000);
+        Thread Computer = new Thread(CPU);
+        
+        Terminal.start();
+        Computer.start();
 		
-		//ASCII codes nathaniel... dont be alarmed you havent fucked up yet
 //		for (int i = 32; i <= 95; i++) 
 //		{
 //			Thread.sleep(20);

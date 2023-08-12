@@ -27,7 +27,6 @@ public class Monitor extends JPanel implements Runnable{
 
 	private int CELL_SIZE;
 
-	private Thread MonitorThread;
 	private Thread CursorThread;
 
 	private int iColumnShift = 0;
@@ -39,8 +38,6 @@ public class Monitor extends JPanel implements Runnable{
 
 	public Monitor(int iReqCellSize , String szWindowTitle) throws InterruptedException 
 	{
-		start();
-		
 		CELL_SIZE = iReqCellSize;
 		
 		JFrame Window = new JFrame(szWindowTitle);
@@ -58,6 +55,8 @@ public class Monitor extends JPanel implements Runnable{
 		Window.setVisible(true);
 
 		resetMonitor();
+		
+		start();
 
 	}
 
@@ -196,10 +195,7 @@ public class Monitor extends JPanel implements Runnable{
 	}
 
 	private void start() 
-	{
-		MonitorThread = new Thread (this , "Monitor Thread");
-		MonitorThread.start();
-		
+	{	
 		CursorThread = new Thread (this , "Cursor Thread");
 		CursorThread.start();
 
