@@ -18,13 +18,13 @@ public class RAM {
 		
 	}
 	
-	public void updateMemoryLocation(short MemoryLocation , byte Data) 
+	public void writeToMemoryLocation(short MemoryLocation , byte Data) 
 	{
 		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = Data;
 		
 	}
 	
-	public byte getMemoryLocation(short MemoryLocation) 
+	public byte readFromMemoryLocation(short MemoryLocation) 
 	{		
 		return ComputerRAM[Short.toUnsignedInt(MemoryLocation)];
 		
@@ -46,7 +46,7 @@ public class RAM {
 				
 		}
 		
-//		System.out.println(Byte.toUnsignedInt(ComputerRAM[0xFF11]));
+		//System.out.println(Byte.toUnsignedInt(ComputerRAM[0xFFFF]));
 //		System.out.println(toLittleEndian((short)0xFF00));
 		
 	}
