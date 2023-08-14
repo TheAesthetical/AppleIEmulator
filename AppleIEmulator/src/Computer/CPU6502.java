@@ -357,7 +357,6 @@ public class CPU6502 implements Runnable {
 
 		Accumulator = 0x00;
 
-		ProgramCounter = 0x0000;
 		StackPointer = 0x00;
 
 		IndexX = 0x00;
@@ -385,6 +384,12 @@ public class CPU6502 implements Runnable {
 		LoByte = 0x00;
 		
 	}
+	
+	private short resetVector(short LoByteLocation , short HiByteLocation)
+	{
+		return ((short) ((DRAM.readFromMemoryLocation((short) Short.toUnsignedInt((short) LoByteLocation))) + 256 * (DRAM.readFromMemoryLocation((short) Short.toUnsignedInt((short) HiByteLocation)))));
+		
+	}
 
 	//===================================================================
 	//Runtime stuff
@@ -395,6 +400,8 @@ public class CPU6502 implements Runnable {
 		resetCPU();
 
 		DRAM = ComputerRAM;
+		
+		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
 
 		start();
 
@@ -562,12 +569,12 @@ public class CPU6502 implements Runnable {
 
 	private void startCycle()
 	{
-		ProgramCounter = (short) 0xFF00;
+		//ProgramCounter = (short) 0xFF00;
 		
 		do
 		{
 		
-			System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + "  :  ");
+			System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " : ");
 			
 		fetch();
 		System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
@@ -662,8 +669,10 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("IMM"):
-			Operand = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
+		
+		Operand = (short) Byte.toUnsignedInt(LoByte);
 
 		break;
 		case("IMP"):
@@ -693,7 +702,7 @@ public class CPU6502 implements Runnable {
 
 		Operand = (short) (Byte.toUnsignedInt(DRAM.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte)))));
 
-		Operand = (short) (Operand + IndexY);
+		Operand = (short) (Operand + Byte.toUnsignedInt(IndexY));
 
 			if ((Operand & 0xFF00) != (HiByte << 8))
 			{
@@ -703,8 +712,10 @@ public class CPU6502 implements Runnable {
 			
 		break;
 		case("REL"):
-			Operand = (short) (Short.toUnsignedInt(ProgramCounter) + DRAM.readFromMemoryLocation(ProgramCounter));
-		incrementPC();
+			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			incrementPC();
+			
+			Operand = (short) Byte.toUnsignedInt((byte) (LoByte + Short.toUnsignedInt(ProgramCounter)));
 
 		if ((Operand & 0x80) == 0x80)
 		{
@@ -714,23 +725,23 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ZPG"):
-			Operand = (short) DRAM.readFromMemoryLocation(ProgramCounter);
+			Operand = (short) Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter));
 		incrementPC();
 
 		break;
 		case("ZPX"):
-			Operand = (short) (DRAM.readFromMemoryLocation(ProgramCounter) + Byte.toUnsignedInt(IndexX));
+			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexX))));
 		incrementPC();
 
 		break;
 		case("ZPY"):
-			Operand = (short) (DRAM.readFromMemoryLocation(ProgramCounter) + Byte.toUnsignedInt(IndexY));
+			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexY))));
 		incrementPC();
 
 		break;
 		default:
 			System.err.println("Fatal error when trying to get the operand by addressing mode!");
-
+			incrementPC();
 			break;
 
 		}
