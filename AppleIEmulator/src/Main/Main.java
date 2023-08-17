@@ -11,6 +11,7 @@ public class Main {
 		ROM MemoryROM = new ROM(8 , "ROM4");
 		RAM MemoryRAM = new RAM(16 , MemoryROM);
 		CPU6502 CPU = new CPU6502(MemoryRAM);
+		PIA Interface = new PIA(CPU , Screen);
 		
         Thread Terminal = new Thread(Screen);
         Terminal.sleep(10000);

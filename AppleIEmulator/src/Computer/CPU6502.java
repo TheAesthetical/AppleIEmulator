@@ -37,17 +37,16 @@ class Opcode {
 
 public class CPU6502 implements Runnable {
 
-	private final int iDataBusSize = 8;
-	private final int iAddressBusSize = 16;
+	private final int ClockSpeedHZ = 1023000;
 
 	//!!!DELETE STATIC MODIFIERS AFTER COMPLETION!!!
 
-	private RAM DRAM;
+	private RAM Memory;
 
 	private byte Accumulator = (byte) 0x00;
 
 	private short ProgramCounter = (short) 0x0000;
-	private byte StackPointer = (byte) 0x00;
+	private byte StackPointer = (byte) 0x00; //0x0100 - 0x01FF
 
 	private byte IndexX = (byte) 0x00;
 	private byte IndexY = (byte) 0x00;
@@ -59,9 +58,6 @@ public class CPU6502 implements Runnable {
 
 	private Opcode[] OpcodeMatrix = new Opcode[255];
 
-	private byte Opcode = (byte) 0x00;
-
-	private short Operand = (short) 0x0000;
 	private byte LoByte = (byte) 0x00;
 	private byte HiByte = (byte) 0x00;
 
@@ -84,7 +80,15 @@ public class CPU6502 implements Runnable {
 		//ZPX - zero page, X-indexed	
 		//ZPY - zero page, Y-indexed	
 
+		//Assuming all Opcodes in the matrix are illegal unless initialised 
+		for (int i = 0; i < OpcodeMatrix.length; i++) 
+		{
+			OpcodeMatrix[i] = new Opcode("XXX" , "XXX" , 0);
+
+		}
+
 		//Opcodes ordered alphabetically from A-Z:
+		//OpcodeMatrix[0x-LoNibble-HiNibble] = new Opcode("Operation" , "AddressingMode" , DefaultNumberOfCycles);
 
 		//ADC
 		OpcodeMatrix[0x69] = new Opcode("ADC" , "IMM" , 2);
@@ -353,7 +357,8 @@ public class CPU6502 implements Runnable {
 
 	private void resetCPU()
 	{
-		DRAM = null;
+
+		Memory = null;
 
 		Accumulator = 0x00;
 
@@ -367,49 +372,35 @@ public class CPU6502 implements Runnable {
 		bInterrupt = false;
 		bNonMaskableInterrupt = false;
 
-		resetAfterCycle();
-		
 		ClockCycles = 0;
 
 		initaliseOpcodeMatrix();
 
 	}
-	
-	private void resetAfterCycle()
-	{
-		Opcode = 0x00;
 
-		Operand = 0x0000;
-		HiByte = 0x00;
-		LoByte = 0x00;
-		
-	}
-	
 	private short resetVector(short LoByteLocation , short HiByteLocation)
 	{
-		return ((short) ((DRAM.readFromMemoryLocation((short) Short.toUnsignedInt((short) LoByteLocation))) + 256 * (DRAM.readFromMemoryLocation((short) Short.toUnsignedInt((short) HiByteLocation)))));
-		
+		return ((short) ((Memory.readFromMemoryLocation((short) Short.toUnsignedInt((short) LoByteLocation))) + 256 * (Memory.readFromMemoryLocation((short) Short.toUnsignedInt((short) HiByteLocation)))));
+
 	}
 
 	//===================================================================
 	//Runtime stuff
 	//===================================================================
 
-	public CPU6502(RAM ComputerRAM)
+	public CPU6502(RAM ComputerRAM) throws InterruptedException
 	{
 		resetCPU();
 
-		DRAM = ComputerRAM;
-		
+		Memory = ComputerRAM;
+
 		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
 
 		start();
 
-		//Create opcodes in the constructor using inner class matrix
-
 	}
 
-	public void start() 
+	public void start() throws InterruptedException 
 	{
 		startCycle();
 
@@ -418,6 +409,49 @@ public class CPU6502 implements Runnable {
 	@Override
 	public void run() 
 	{
+
+	}
+
+	//===================================================================
+	//Debug
+	//===================================================================
+
+	private void disassemble()
+	{
+
+	}
+
+	public void DumpCPU()
+	{
+		System.out.print("\n");
+		System.err.println("-----CPU STATS-----");
+		System.out.println("A : " + Integer.toHexString(Byte.toUnsignedInt(Accumulator)).toUpperCase());
+		System.out.println("X : " + Integer.toHexString(Byte.toUnsignedInt(IndexX)).toUpperCase());
+		System.out.println("Y : " + Integer.toHexString(Byte.toUnsignedInt(IndexY)).toUpperCase());
+		System.out.print("\n");
+
+		System.out.println("PC : " + Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " (0x0000 - 0xFFFF)");
+		System.out.println("SP : " + Integer.toHexString(Byte.toUnsignedInt(StackPointer)).toUpperCase() + " (0x0100 - 0x01FF)");
+		System.out.print("\n");
+
+		System.out.println("SF : " + Integer.toHexString(Byte.toUnsignedInt(StatusFlags)));
+		System.out.println("C (0) : " + getStatusFlag('C'));
+		System.out.println("Z (1) : " + getStatusFlag('Z'));
+		System.out.println("I (2) : " + getStatusFlag('I'));
+		System.out.println("D (3) : " + getStatusFlag('D'));
+		System.out.println("B (4) : " + getStatusFlag('B'));
+		System.out.println("- (5) : " + getStatusFlag('-'));
+		System.out.println("O (6) : " + getStatusFlag('O'));
+		System.out.println("N (7) : " + getStatusFlag('N'));
+		System.out.print("\n");
+
+		System.out.println("IRQ? : " + bInterrupt);
+		System.out.println("NMI? : " + bNonMaskableInterrupt);
+		System.out.print("\n");
+
+		System.out.println("Clock : " + ClockCycles);
+		System.err.println("-----END CPU STATS-----");
+		System.out.print("\n");
 
 	}
 
@@ -528,65 +562,77 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	private void checkCarry()
+	private void checkCarry(byte Register)
 	{
+		setStatusFlag('C' , (Register & 0x0001) == 0x0001);
+		
+	}
+
+	private void checkZero(byte Register)
+	{
+		setStatusFlag('Z' , Byte.toUnsignedInt(Register) == 0x00);
 
 	}
 
-	private void checkZero()
+	private void checkOverflow(byte Register , byte FetchedByte)
 	{
+		setStatusFlag('O' , (~ ((short) Accumulator ^ (short)FetchedByte) & ((short) Accumulator ^ (short) Register) & 0x0080) == 0x0080);
 
 	}
 
-	private void checkInterruptInhibit()
+	private void checkNegative(byte Register)
 	{
-
-	}
-
-	private void checkDecimalMode()
-	{
-
-	}
-
-	private void checkBreak()
-	{
-
-	}
-
-	private void checkOverflow()
-	{
-
-	}
-
-	private void checkNegative()
-	{
-
+		setStatusFlag('N' , (Register & 0x80) == 0x80);
 	}
 
 	//===================================================================
 	//Fetch-Decode-Execute Cycle
 	//===================================================================
 
-	private void startCycle()
+	private void startCycle() throws InterruptedException
 	{
-		//ProgramCounter = (short) 0xFF00;
-		
 		do
 		{
+
+			long preCycleTime = System.nanoTime();
 		
-			System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " : ");
+			cycle();
 			
-		fetch();
+			long postCycleTime = System.nanoTime();
+			
+			long CycleTime = (postCycleTime - preCycleTime) / 1000000000;
+			System.out.println(CycleTime);
+			
+			long SleepTime = ((((1 / ClockSpeedHZ) - CycleTime) * 1000) / 1000);
+			System.out.println(SleepTime);
+			Thread.sleep(SleepTime);
+
+		}while (ProgramCounter != 0);
+	}
+
+	private void cycle() throws InterruptedException
+	{
+		byte Opcode = (byte) 0x00;
+
+		short Operand = (short) 0x0000;
+
+		HiByte = 0x00;
+		LoByte = 0x00;
+
+		System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " : ");
+
+		Opcode = fetch();
+		incrementPC();
+
 		System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
-		getOperandByAddressMode();
+
+		Operand = getOperandByAddressMode(Opcode , Operand);
+
 		System.out.println(Integer.toHexString(Short.toUnsignedInt(Operand)).toUpperCase());
-		executeInstruction();
+
+		executeInstruction(Opcode , Operand);
 
 		ClockCycles = ClockCycles + OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getClockCycles();
-		
-		resetAfterCycle();
-		
-		}while(1 > 0);
 
 	}
 
@@ -596,15 +642,13 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	private void fetch()
+	private byte fetch()
 	{
-		Opcode = DRAM.readFromMemoryLocation(ProgramCounter);
-
-		incrementPC();
+		return Memory.readFromMemoryLocation(ProgramCounter);
 
 	}
 
-	private void getOperandByAddressMode()
+	private short getOperandByAddressMode(byte Opcode , short Operand)
 	{
 		//ACC - Accumulator
 		//ABS - absolute
@@ -627,20 +671,20 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ABS"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		HiByte = DRAM.readFromMemoryLocation(ProgramCounter);
+		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
 		Operand = (short) (Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte));
 
 		break;
 		case("ABX"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		HiByte = DRAM.readFromMemoryLocation(ProgramCounter);
+		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
 		Operand = (short) (((Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte))) + Byte.toUnsignedInt(IndexX));
@@ -653,10 +697,10 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ABY"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		HiByte = DRAM.readFromMemoryLocation(ProgramCounter);
+		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
 		Operand = (short) (((Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte))) + Byte.toUnsignedInt(IndexX));
@@ -669,9 +713,9 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("IMM"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
-		
+
 		Operand = (short) Byte.toUnsignedInt(LoByte);
 
 		break;
@@ -680,42 +724,42 @@ public class CPU6502 implements Runnable {
 
 			break;
 		case("IND"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		HiByte = DRAM.readFromMemoryLocation(ProgramCounter);
+		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(DRAM.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte)))));
+		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte)))));
 
-			break;
+		break;
 		case("XIN"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(DRAM.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + IndexX))));
+		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + IndexX))));
 
-			break;
+		break;
 		case("INY"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(DRAM.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte)))));
+		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte)))));
 
 		Operand = (short) (Operand + Byte.toUnsignedInt(IndexY));
 
-			if ((Operand & 0xFF00) != (HiByte << 8))
-			{
-				ClockCycles++;
+		if ((Operand & 0xFF00) != (HiByte << 8))
+		{
+			ClockCycles++;
 
-			}
-			
+		}
+
 		break;
 		case("REL"):
-			LoByte = DRAM.readFromMemoryLocation(ProgramCounter);
-			incrementPC();
-			
-			Operand = (short) Byte.toUnsignedInt((byte) (LoByte + Short.toUnsignedInt(ProgramCounter)));
+			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+		incrementPC();
+
+		Operand = (short) Byte.toUnsignedInt((byte) (LoByte + Short.toUnsignedInt(ProgramCounter)));
 
 		if ((Operand & 0x80) == 0x80)
 		{
@@ -725,32 +769,226 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ZPG"):
-			Operand = (short) Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter));
+			Operand = (short) Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter));
 		incrementPC();
 
 		break;
 		case("ZPX"):
-			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexX))));
+			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexX))));
 		incrementPC();
 
 		break;
 		case("ZPY"):
-			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(DRAM.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexY))));
+			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexY))));
 		incrementPC();
 
 		break;
 		default:
 			System.err.println("Fatal error when trying to get the operand by addressing mode!");
-			incrementPC();
+			DumpCPU();
+
 			break;
 
 		}
 
+		//Special case for BRK - as it requires an additional PC increment
+		if(Byte.toUnsignedInt(Opcode) == 0)
+		{
+			incrementPC();
+
+		}
+
+		return Operand;
+
 	}
 
-	private void executeInstruction()
+	private void executeInstruction(byte Opcode , short Operand)
 	{
 		//Instructions
+
+		switch(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getOperation())
+		{
+		case("ADC"):
+
+
+			break;
+		case("AND"):
+
+			break;
+		case("ASL"):
+
+			break;
+		case("BCC"):
+
+			break;
+		case("BCS"):
+
+			break;
+		case("BEQ"):
+
+			break;
+		case("BIT"):
+
+			break;
+		case("BMI"):
+
+			break;
+		case("BNE"):
+
+			break;
+		case("BPL"):
+
+			break;
+		case("BRK"):
+
+			break;
+		case("BVC"):
+
+			break;
+		case("BVS"):
+
+			break;
+		case("CLC"):
+
+			break;
+		case("CLD"):
+
+			break;
+		case("CLI"):
+
+			break;
+		case("CLV"):
+
+			break;
+		case("CMP"):
+
+			break;
+		case("CPX"):
+
+			break;
+		case("CPY"):
+
+			break;
+		case("DEC"):
+
+			break;
+		case("DEX"):
+
+			break;
+		case("DEY"):
+
+			break;
+		case("EOR"):
+
+			break;
+		case("INC"):
+
+			break;
+		case("INX"):
+
+			break;
+		case("INY"):
+
+			break;
+		case("JMP"):
+
+			break;
+		case("JSR"):
+
+			break;
+		case("LDA"):
+
+			break;
+		case("LDX"):
+
+			break;
+		case("LDY"):
+
+			break;
+		case("LSR"):
+
+			break;
+		case("NOP"):
+
+			break;
+		case("ORA"):
+
+			break;
+		case("PHA"):
+
+			break;
+		case("PHP"):
+
+			break;
+		case("PLA"):
+
+			break;
+		case("PLP"):
+
+			break;
+		case("ROL"):
+
+			break;
+		case("ROR"):
+
+			break;
+		case("RTI"):
+
+			break;
+		case("RTS"):
+
+			break;
+		case("SBC"):
+
+			break;
+		case("SEC"):
+
+			break;
+		case("SED"):
+
+			break;
+		case("SEI"):
+
+			break;
+		case("STA"):
+
+			break;
+		case("STX"):
+
+			break;
+		case("STY"):
+
+			break;
+		case("TAX"):
+
+			break;
+		case("TAY"):
+
+			break;
+		case("TSX"):
+
+			break;
+		case("TXA"):
+
+			break;
+		case("TXS"):
+
+			break;
+		case("TYA"):
+
+			break;
+		case("XXX"):
+			System.err.println("Error: Illegal and unrecognised Opcode encountered!");
+		DumpCPU();
+
+		break;
+		default:
+			System.err.println("Fatal error.");
+			DumpCPU();
+
+			break;
+
+		}
 
 	}
 

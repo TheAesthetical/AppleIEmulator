@@ -50,15 +50,5 @@ public class RAM {
 //		System.out.println(toLittleEndian((short)0xFF00));
 		
 	}
-	
-	public short toOppositeEndian(short MemoryLocation) 
-	{	
-		String szMemoryLocation = Integer.toHexString(Short.toUnsignedInt(MemoryLocation));
-		
-		szMemoryLocation = szMemoryLocation.substring(2, 4) + szMemoryLocation.substring(0, 2);
-
-		return Short.parseShort(szMemoryLocation , 16); 
-		
-	}
 
 }

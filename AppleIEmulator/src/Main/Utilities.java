@@ -14,16 +14,26 @@ public class Utilities {
 	
 	//Could be used again, idk yet
 	
-	private int toUnsignedByte (byte ByteValue) 
+	public int toUnsignedByte (byte ByteValue) 
 	{
 		return ByteValue & 0xFF;
 
 	}
 
-	private int toUnsignedShort (short ShortValue) 
+	public int toUnsignedShort (short ShortValue) 
 	{
 		return ShortValue & 0xFFFF;
 
+	}
+	
+	public short toOppositeEndian(short MemoryLocation) 
+	{	
+		String szMemoryLocation = Integer.toHexString(Short.toUnsignedInt(MemoryLocation));
+		
+		szMemoryLocation = szMemoryLocation.substring(2, 4) + szMemoryLocation.substring(0, 2);
+
+		return Short.parseShort(szMemoryLocation , 16); 
+		
 	}
 	
 }
