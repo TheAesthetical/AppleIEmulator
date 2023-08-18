@@ -1,5 +1,7 @@
 package Computer;
 
+import java.util.concurrent.TimeUnit;
+
 class Opcode {
 
 	private String szOperation;
@@ -65,20 +67,20 @@ public class CPU6502 implements Runnable {
 
 	private void initaliseOpcodeMatrix() 
 	{
-
+		//Modes:
 		//ACC - Accumulator
-		//ABS - absolute
-		//ABX - absolute, X-indexed
-		//ABY - absolute, Y-indexed
-		//IMM - immediate
-		//IMP - implied
-		//IND - indirect
+		//ABS - Absolute
+		//ABX - Absolute, X-indexed
+		//ABY - Absolute, Y-indexed
+		//IMM - Immediate
+		//IMP - Implied
+		//IND - Indirect
 		//XIN - X-indexed, indirect
-		//INY - indirect, Y-indexed	
-		//REL - relative
-		//ZPG - zero page
-		//ZPX - zero page, X-indexed	
-		//ZPY - zero page, Y-indexed	
+		//INY - Indirect, Y-indexed	
+		//REL - Relative
+		//ZPG - Zero page
+		//ZPX - Zero page, X-indexed	
+		//ZPY - Zero page, Y-indexed	
 
 		//Assuming all Opcodes in the matrix are illegal unless initialised 
 		for (int i = 0; i < OpcodeMatrix.length; i++) 
@@ -562,6 +564,8 @@ public class CPU6502 implements Runnable {
 
 	}
 
+	//Arithmetic Status Flag checks that would be done by the ALU
+
 	private void checkCarry(byte Register)
 	{
 		setStatusFlag('C' , (Register & 0x0001) == 0x0001);
@@ -585,7 +589,7 @@ public class CPU6502 implements Runnable {
 		setStatusFlag('N' , (Register & 0x80) == 0x80);
 	}
 
-	private int complement(int Word) 
+	private int oppositeComplement(int Word) 
 	{
 		return (Word < 128) ? Word : -1 * ((Word ^ 0xff) + 1);
 
@@ -596,7 +600,7 @@ public class CPU6502 implements Runnable {
 		return (((Word / 10) % 10) << 4) | (Word % 10);
 	}
 
-	private int bcdToBinary(int v) 
+	private int bcdTo1Binary(int v) 
 	{
 		return ((v >> 4) * 10) + (v & 0xf);
 
@@ -617,14 +621,15 @@ public class CPU6502 implements Runnable {
 
 			long postCycleTime = System.nanoTime();
 
-			long CycleTime = (postCycleTime - preCycleTime) / 1000000000;
+			long CycleTime = (postCycleTime - preCycleTime) / 1000;
 			//System.out.println(CycleTime);
+			//System.out.println(ClockCycles - CycleTime);
 
-			long SleepTime = Math.round(((1 / ClockSpeedHZ) - CycleTime) * 1000);
-			System.out.println(SleepTime);
-			Thread.sleep(SleepTime);
+			TimeUnit.MICROSECONDS.sleep(ClockCycles - CycleTime);
 
-		}while (ProgramCounter != 0);
+			//HAS TO BE AN EVEN INTEGER IN EXPRESSION OTHERWISE THERE WILL BE AN INFINITE LOOP
+		} while (Short.toUnsignedInt(ProgramCounter) != 0x0);
+
 	}
 
 	private void cycle() throws InterruptedException
@@ -635,9 +640,9 @@ public class CPU6502 implements Runnable {
 		HiByte = 0x00;
 		LoByte = 0x00;
 
-		System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " : ");
+		System.out.print(Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + "	:   ");
 
-		Opcode = fetch();
+		Opcode = fetchOpcode();
 		incrementPC();
 
 		//System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
@@ -649,7 +654,7 @@ public class CPU6502 implements Runnable {
 
 		executeInstruction(Opcode , Operand);
 
-		ClockCycles = ClockCycles + OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getClockCycles();
+		ClockCycles = OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getClockCycles();
 
 	}
 
@@ -659,7 +664,7 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	private byte fetch()
+	private byte fetchOpcode()
 	{
 		return Memory.readFromMemoryLocation(ProgramCounter);
 
@@ -667,19 +672,20 @@ public class CPU6502 implements Runnable {
 
 	private short getOperandByAddressMode(byte Opcode , short Operand)
 	{
+		//Modes:
 		//ACC - Accumulator
-		//ABS - absolute
-		//ABX - absolute, X-indexed
-		//ABY - absolute, Y-indexed
-		//IMM - immediate
-		//IMP - implied
-		//IND - indirect
+		//ABS - Absolute
+		//ABX - Absolute, X-indexed
+		//ABY - Absolute, Y-indexed
+		//IMM - Immediate
+		//IMP - Implied
+		//IND - Indirect
 		//XIN - X-indexed, indirect
-		//INY - indirect, Y-indexed	
-		//REL - relative
-		//ZPG - zero page
-		//ZPX - zero page, X-indexed	
-		//ZPY - zero page, Y-indexed	
+		//INY - Indirect, Y-indexed	
+		//REL - Relative
+		//ZPG - Zero page
+		//ZPX - Zero page, X-indexed	
+		//ZPY - Zero page, Y-indexed	
 
 		switch(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getAddressingMode())
 		{

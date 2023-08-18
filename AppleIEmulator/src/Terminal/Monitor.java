@@ -51,6 +51,14 @@ public class Monitor extends JPanel implements Runnable{
 		this.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE , GRID_HEIGHT * CELL_SIZE));
 		Window.getContentPane().add(this);
 		
+		 JButton FileButton = new JButton("File");
+		 FileButton.setSize(30, 30);
+		 Window.add(FileButton, BorderLayout.SOUTH);
+		
+		 JButton ResetButton = new JButton("Reset");
+		 ResetButton.setSize(30, 30);
+		 Window.add(ResetButton, BorderLayout.SOUTH);
+		
 		Window.pack();
 		Window.setVisible(true);
 
@@ -148,8 +156,8 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	private void displayCharacter(int iReqCharIndex) {
-		
+	private void displayCharacter(int iReqCharIndex) 
+	{
 		int iCharIndex = CharacterSet.convertCharASCIIIndex(iReqCharIndex);
 
 		for (int i = 0; i < iCharHeight; i++) 
