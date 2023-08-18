@@ -565,7 +565,7 @@ public class CPU6502 implements Runnable {
 	private void checkCarry(byte Register)
 	{
 		setStatusFlag('C' , (Register & 0x0001) == 0x0001);
-		
+
 	}
 
 	private void checkZero(byte Register)
@@ -574,15 +574,32 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	private void checkOverflow(byte Register , byte FetchedByte)
+	private void checkOverflow(byte RequestedRegister , byte FetchedByte)
 	{
-		setStatusFlag('O' , (~ ((short) Accumulator ^ (short)FetchedByte) & ((short) Accumulator ^ (short) Register) & 0x0080) == 0x0080);
+		setStatusFlag('O' , (~ ((short) Accumulator ^ (short)FetchedByte) & ((short) Accumulator ^ (short) RequestedRegister) & 0x0080) == 0x0080);
 
 	}
 
 	private void checkNegative(byte Register)
 	{
 		setStatusFlag('N' , (Register & 0x80) == 0x80);
+	}
+
+	private int complement(int Word) 
+	{
+		return (Word < 128) ? Word : -1 * ((Word ^ 0xff) + 1);
+
+	}
+
+	private int binaryToBCD(int Word) 
+	{
+		return (((Word / 10) % 10) << 4) | (Word % 10);
+	}
+
+	private int bcdToBinary(int v) 
+	{
+		return ((v >> 4) * 10) + (v & 0xf);
+
 	}
 
 	//===================================================================
@@ -595,15 +612,15 @@ public class CPU6502 implements Runnable {
 		{
 
 			long preCycleTime = System.nanoTime();
-		
+
 			cycle();
-			
+
 			long postCycleTime = System.nanoTime();
-			
+
 			long CycleTime = (postCycleTime - preCycleTime) / 1000000000;
-			System.out.println(CycleTime);
-			
-			long SleepTime = ((((1 / ClockSpeedHZ) - CycleTime) * 1000) / 1000);
+			//System.out.println(CycleTime);
+
+			long SleepTime = Math.round(((1 / ClockSpeedHZ) - CycleTime) * 1000);
 			System.out.println(SleepTime);
 			Thread.sleep(SleepTime);
 
@@ -615,7 +632,6 @@ public class CPU6502 implements Runnable {
 		byte Opcode = (byte) 0x00;
 
 		short Operand = (short) 0x0000;
-
 		HiByte = 0x00;
 		LoByte = 0x00;
 
@@ -624,7 +640,8 @@ public class CPU6502 implements Runnable {
 		Opcode = fetch();
 		incrementPC();
 
-		System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
+		//System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
+		System.out.print(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getOperation() + " ");
 
 		Operand = getOperandByAddressMode(Opcode , Operand);
 
@@ -791,13 +808,6 @@ public class CPU6502 implements Runnable {
 
 		}
 
-		//Special case for BRK - as it requires an additional PC increment
-		if(Byte.toUnsignedInt(Opcode) == 0)
-		{
-			incrementPC();
-
-		}
-
 		return Operand;
 
 	}
@@ -840,8 +850,9 @@ public class CPU6502 implements Runnable {
 
 			break;
 		case("BRK"):
+			incrementPC();
 
-			break;
+		break;
 		case("BVC"):
 
 			break;
