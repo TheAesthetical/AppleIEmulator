@@ -33,6 +33,14 @@ public class Monitor extends JPanel implements Runnable{
 	private int iRowShift = 0;
 	private int iCharsOnLine = 0;
 	private int iLinesOnScreen = 1;
+	
+	private JFrame Window;
+
+	public JFrame getWindow() 
+	{
+		return Window;
+		
+	}
 
 	private boolean[][] bPixelGrid = new boolean[GRID_HEIGHT][GRID_WIDTH];
 
@@ -40,7 +48,7 @@ public class Monitor extends JPanel implements Runnable{
 	{
 		CELL_SIZE = iReqCellSize;
 		
-		JFrame Window = new JFrame(szWindowTitle);
+		Window = new JFrame(szWindowTitle);
         
 		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
 		Window.setIconImage(WindowFavicon.getImage());
@@ -51,13 +59,13 @@ public class Monitor extends JPanel implements Runnable{
 		this.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE , GRID_HEIGHT * CELL_SIZE));
 		Window.getContentPane().add(this);
 		
-		 JButton FileButton = new JButton("File");
-		 FileButton.setSize(30, 30);
-		 Window.add(FileButton, BorderLayout.SOUTH);
-		
-		 JButton ResetButton = new JButton("Reset");
-		 ResetButton.setSize(30, 30);
-		 Window.add(ResetButton, BorderLayout.SOUTH);
+//		 JButton FileButton = new JButton("File");
+//		 FileButton.setSize(30, 30);
+//		 Window.add(FileButton, BorderLayout.SOUTH);
+//		
+//		 JButton ResetButton = new JButton("Reset");
+//		 ResetButton.setSize(30, 30);
+//		 Window.add(ResetButton, BorderLayout.SOUTH);
 		
 		Window.pack();
 		Window.setVisible(true);
