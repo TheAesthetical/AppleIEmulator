@@ -69,11 +69,27 @@ public class Monitor extends JPanel implements Runnable{
 		
 		Window.pack();
 		Window.setVisible(true);
-
+		
+		//createVRAM();
 		resetMonitor();
 		
 		start();
 
+	}
+	
+	private void createVRAM()
+	{
+		for (int i = 0; i < 22; i++) 
+		{
+			for (int j = 0; j < 40; j++) 
+			{
+				
+				
+
+			} 
+			
+		}
+		
 	}
 
 	private void resetMonitor()
@@ -109,7 +125,7 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public void drawNextCharacter(int iReqCharIndex) throws InterruptedException {
+	public void drawNextCharacter(int iReqCharIndex) {
 
 		displayCharacter(iReqCharIndex);
 

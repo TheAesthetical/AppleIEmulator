@@ -7,7 +7,7 @@ import Terminal.Monitor;
 
 public class PIA {
 
-	public PIA(CPU6502 CPU, Monitor Screen) 
+	public PIA(CPU6502 CPU, Monitor Screen) throws InterruptedException 
 	{
 		keyboardHandler(Screen);
 
@@ -15,24 +15,28 @@ public class PIA {
 	
 	private void keyboardHandler(Monitor Screen) 
 	{
-	Screen.getWindow().addKeyListener(new KeyListener() {
-		
-		public void keyTyped(KeyEvent e) {
+	Screen.getWindow().addKeyListener(new KeyListener() 
+	{
+		public void keyTyped(KeyEvent e) 
+		{
 			char chCharacterPressed = e.getKeyChar();
-			int iASCIIValue = (int) chCharacterPressed;
+			byte iASCIIValue = (byte) chCharacterPressed;
 			
 			//System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + iASCIIValue + ")");
 			
-			try 
+			if(iASCIIValue < 32)
 			{
-				Screen.drawNextCharacter(iASCIIValue);
-				
-			} 
-			catch (InterruptedException e1) 
-			{
-				e1.printStackTrace();
+				iASCIIValue = 32;
 				
 			}
+			
+			if(iASCIIValue > 95)
+			{
+				iASCIIValue = 95;
+				
+			}
+			
+			Screen.drawNextCharacter(Byte.toUnsignedInt(iASCIIValue));
 			
 		}
 
