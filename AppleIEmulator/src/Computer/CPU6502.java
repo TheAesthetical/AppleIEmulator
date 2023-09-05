@@ -64,6 +64,12 @@ public class CPU6502 implements Runnable {
 	private byte HiByte = (byte) 0x00;
 
 	private long ClockCycles = 0;
+	
+	private short getStackPointer() 
+	{
+		return (short) ((0x01) + 256 * (Byte.toUnsignedInt(StackPointer)));
+		
+	}
 
 	private void initaliseOpcodeMatrix() 
 	{
@@ -357,7 +363,7 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	private void resetCPU()
+	public void resetCPU()
 	{
 
 		Memory = null;
@@ -395,10 +401,8 @@ public class CPU6502 implements Runnable {
 		resetCPU();
 
 		Memory = ComputerRAM;
-
+		
 		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
-
-		start();
 
 	}
 
@@ -423,17 +427,17 @@ public class CPU6502 implements Runnable {
 
 	}
 
-	public void DumpCPU()
+	public void dumpCPU()
 	{
 		System.out.print("\n");
-		System.err.println("-----CPU STATS-----");
+		System.out.println("---------- CPU STATS ----------");
 		System.out.println("A : " + Integer.toHexString(Byte.toUnsignedInt(Accumulator)).toUpperCase());
 		System.out.println("X : " + Integer.toHexString(Byte.toUnsignedInt(IndexX)).toUpperCase());
 		System.out.println("Y : " + Integer.toHexString(Byte.toUnsignedInt(IndexY)).toUpperCase());
 		System.out.print("\n");
 
 		System.out.println("PC : " + Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " (0x0000 - 0xFFFF)");
-		System.out.println("SP : " + Integer.toHexString(Byte.toUnsignedInt(StackPointer)).toUpperCase() + " (0x0100 - 0x01FF)");
+		System.out.println("SP : " + Integer.toHexString(Short.toUnsignedInt(getStackPointer())).toUpperCase() + " (0x0100 - 0x01FF)");
 		System.out.print("\n");
 
 		System.out.println("SF : " + Integer.toHexString(Byte.toUnsignedInt(StatusFlags)));
@@ -452,7 +456,7 @@ public class CPU6502 implements Runnable {
 		System.out.print("\n");
 
 		System.out.println("Clock : " + ClockCycles);
-		System.err.println("-----END CPU STATS-----");
+		System.out.println("---------- END CPU STATS ----------");
 		System.out.print("\n");
 
 	}
@@ -600,9 +604,9 @@ public class CPU6502 implements Runnable {
 		return (((Word / 10) % 10) << 4) | (Word % 10);
 	}
 
-	private int bcdTo1Binary(int v) 
+	private int bcdTo1Binary(int Word) 
 	{
-		return ((v >> 4) * 10) + (v & 0xf);
+		return ((Word >> 4) * 10) + (Word & 0xf);
 
 	}
 
@@ -629,6 +633,8 @@ public class CPU6502 implements Runnable {
 
 			//HAS TO BE AN EVEN INTEGER IN EXPRESSION OTHERWISE THERE WILL BE AN INFINITE LOOP
 		} while (Short.toUnsignedInt(ProgramCounter) != 0x0);
+		
+		dumpCPU();
 
 	}
 
@@ -652,7 +658,10 @@ public class CPU6502 implements Runnable {
 
 		System.out.println(Integer.toHexString(Short.toUnsignedInt(Operand)).toUpperCase());
 
-		executeInstruction(Opcode , Operand);
+		//executeInstruction(Opcode , Operand);
+		
+		//For while im completing the instructions this is going to have to work to increment the PC if a BRK occurs
+		if(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getOperation().equalsIgnoreCase("BRK")) incrementPC();
 
 		ClockCycles = OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getClockCycles();
 
@@ -808,7 +817,7 @@ public class CPU6502 implements Runnable {
 		break;
 		default:
 			System.err.println("Fatal error when trying to get the operand by addressing mode!");
-			DumpCPU();
+			dumpCPU();
 
 			break;
 
@@ -825,25 +834,46 @@ public class CPU6502 implements Runnable {
 		switch(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getOperation())
 		{
 		case("ADC"):
-
+			//apparently hard
 
 			break;
 		case("AND"):
+			Accumulator = (byte) (Byte.toUnsignedInt(Accumulator) & Short.toUnsignedInt(Operand));
 
 			break;
 		case("ASL"):
-
+			byte Carry = (byte) ((Short.toUnsignedInt(Operand) * 2) - (Short.toUnsignedInt(Operand) << 1));
+		
+		
+			
 			break;
 		case("BCC"):
+			if(getStatusFlag('C') == false)
+			{
+				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				
+			}
 
 			break;
 		case("BCS"):
+			if(getStatusFlag('C') == true)
+			{
+				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				
+			}
 
 			break;
 		case("BEQ"):
+			if(getStatusFlag('Z') == true)
+			{
+				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				
+			}
 
 			break;
 		case("BIT"):
+			byte Bit6 = (Operand & 0xBF) - 64;
+			byte Bit7 = (Operand & 0x7F) - 128;
 
 			break;
 		case("BMI"):
@@ -996,12 +1026,12 @@ public class CPU6502 implements Runnable {
 			break;
 		case("XXX"):
 			System.err.println("Error: Illegal and unrecognised Opcode encountered!");
-		DumpCPU();
+		dumpCPU();
 
 		break;
 		default:
 			System.err.println("Fatal error.");
-			DumpCPU();
+			dumpCPU();
 
 			break;
 

@@ -77,6 +77,7 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 	
+	//trying to achieve the dodgy uninitialised look about it
 	private void createVRAM()
 	{
 		for (int i = 0; i < 22; i++) 
@@ -92,7 +93,7 @@ public class Monitor extends JPanel implements Runnable{
 		
 	}
 
-	private void resetMonitor()
+	public void resetMonitor()
 	{
 		iColumnShift = 0;
 		iRowShift = 0;

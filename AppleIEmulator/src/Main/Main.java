@@ -14,8 +14,11 @@ public class Main {
 		PIA Interface = new PIA(CPU , Screen);
 		
         Thread Terminal = new Thread(Screen);
-        Terminal.sleep(10000);
+        //Terminal.sleep(10000);
         Thread Computer = new Thread(CPU);
+        Computer.sleep(1000);
+        
+        CPU.start();
         
         Terminal.start();
         Computer.start();

@@ -821,6 +821,11 @@ public class CharacterGenerator {
 		return iASCIICharIndex;
 		
 	}
+	
+	public int convertCharASCIIIndexAMEND(int iReqCharIndex) 
+	{
+		return 0;
+	}
 
 	//By ASCII Code
 	public boolean[][][] getCharacterROM() 
