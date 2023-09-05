@@ -64,12 +64,6 @@ public class CPU6502 implements Runnable {
 	private byte HiByte = (byte) 0x00;
 
 	private long ClockCycles = 0;
-	
-	private short getStackPointer() 
-	{
-		return (short) ((0x01) + 256 * (Byte.toUnsignedInt(StackPointer)));
-		
-	}
 
 	private void initaliseOpcodeMatrix() 
 	{
@@ -388,9 +382,62 @@ public class CPU6502 implements Runnable {
 
 	private short resetVector(short LoByteLocation , short HiByteLocation)
 	{
-		return ((short) ((Memory.readFromMemoryLocation((short) Short.toUnsignedInt((short) LoByteLocation))) + 256 * (Memory.readFromMemoryLocation((short) Short.toUnsignedInt((short) HiByteLocation)))));
+		return (short) ((Memory.readFromMemoryLocation(Short.toUnsignedInt(LoByteLocation)) + 256 * (Memory.readFromMemoryLocation(Short.toUnsignedInt(HiByteLocation)))));
 
 	}
+	
+	//===================================================================
+	//Getters
+	//===================================================================
+	
+	private int getA() 
+	{
+		return Byte.toUnsignedInt(Accumulator);
+		
+	}
+	
+	private int getPC() 
+	{
+		return Short.toUnsignedInt(ProgramCounter);
+		
+	}
+	
+	private int getSP() 
+	{
+		return Short.toUnsignedInt((short) ((0x01) + 256 * (Byte.toUnsignedInt(StackPointer))));
+		
+	}
+	
+	private int getX() 
+	{
+		return Byte.toUnsignedInt(IndexX);
+		
+	}
+	
+	private int getY() 
+	{
+		return Byte.toUnsignedInt(IndexY);
+		
+	}
+	
+	private int getSF() 
+	{
+		return Byte.toUnsignedInt(StatusFlags);
+		
+	}
+	
+	private int getHI() 
+	{
+		return Byte.toUnsignedInt(HiByte);
+		
+	}
+	
+	private int getLO() 
+	{
+		return Byte.toUnsignedInt(LoByte);
+		
+	}
+
 
 	//===================================================================
 	//Runtime stuff
@@ -437,7 +484,7 @@ public class CPU6502 implements Runnable {
 		System.out.print("\n");
 
 		System.out.println("PC : " + Integer.toHexString(Short.toUnsignedInt(ProgramCounter)).toUpperCase() + " (0x0000 - 0xFFFF)");
-		System.out.println("SP : " + Integer.toHexString(Short.toUnsignedInt(getStackPointer())).toUpperCase() + " (0x0100 - 0x01FF)");
+		System.out.println("SP : " + Integer.toHexString(getSP()).toUpperCase() + " (0x0100 - 0x01FF)");
 		System.out.print("\n");
 
 		System.out.println("SF : " + Integer.toHexString(Byte.toUnsignedInt(StatusFlags)));
@@ -632,7 +679,7 @@ public class CPU6502 implements Runnable {
 			TimeUnit.MICROSECONDS.sleep(ClockCycles - CycleTime);
 
 			//HAS TO BE AN EVEN INTEGER IN EXPRESSION OTHERWISE THERE WILL BE AN INFINITE LOOP
-		} while (Short.toUnsignedInt(ProgramCounter) != 0x0);
+		} while (getPC() != 0x0);
 		
 		dumpCPU();
 
@@ -669,13 +716,13 @@ public class CPU6502 implements Runnable {
 
 	private void incrementPC()
 	{
-		ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + 1);
+		ProgramCounter = (short) (getPC() + 1);
 
 	}
 
 	private byte fetchOpcode()
 	{
-		return Memory.readFromMemoryLocation(ProgramCounter);
+		return (byte) Memory.readFromMemoryLocation(getPC());
 
 	}
 
@@ -699,27 +746,27 @@ public class CPU6502 implements Runnable {
 		switch(OpcodeMatrix[Byte.toUnsignedInt(Opcode)].getAddressingMode())
 		{
 		case("ACC"):
-			Operand = (short) Byte.toUnsignedInt(Accumulator);
+			Operand = (short) getA();
 
 		break;
 		case("ABS"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
+		HiByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte));
+		Operand = (short) (getLO() + 256 * getHI());
 
 		break;
 		case("ABX"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
+		HiByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (((Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte))) + Byte.toUnsignedInt(IndexX));
+		Operand = (short) (((getLO() + 256 * getHI())) + getX());
 
 		if ((Operand & 0xFF00) != (HiByte << 8))
 		{
@@ -729,13 +776,13 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ABY"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
+		HiByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (((Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte))) + Byte.toUnsignedInt(IndexX));
+		Operand = (short) (((getLO() + 256 * getHI())) + getY());
 
 		if ((Operand & 0xFF00) != (HiByte << 8))
 		{
@@ -745,10 +792,10 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("IMM"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) Byte.toUnsignedInt(LoByte);
+		Operand = (short) getLO();
 
 		break;
 		case("IMP"):
@@ -756,29 +803,29 @@ public class CPU6502 implements Runnable {
 
 			break;
 		case("IND"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		HiByte = Memory.readFromMemoryLocation(ProgramCounter);
+		HiByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + 256 * Byte.toUnsignedInt(HiByte)))));
+		Operand = (short) Memory.readFromMemoryLocation((getLO() + 256 * getHI()));
 
 		break;
 		case("XIN"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte) + IndexX))));
+		Operand = (short) Memory.readFromMemoryLocation((getLO() + getX()));
 
 		break;
 		case("INY"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) (Byte.toUnsignedInt(Memory.readFromMemoryLocation((short) (Byte.toUnsignedInt(LoByte)))));
+		Operand = (short) (Memory.readFromMemoryLocation(getLO()));
 
-		Operand = (short) (Operand + Byte.toUnsignedInt(IndexY));
+		Operand = (short) (Operand + getY());
 
 		if ((Operand & 0xFF00) != (HiByte << 8))
 		{
@@ -788,10 +835,10 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("REL"):
-			LoByte = Memory.readFromMemoryLocation(ProgramCounter);
+			LoByte = (byte) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
-		Operand = (short) Byte.toUnsignedInt((byte) (LoByte + Short.toUnsignedInt(ProgramCounter)));
+		Operand = (short) (getLO() + getPC());
 
 		if ((Operand & 0x80) == 0x80)
 		{
@@ -801,17 +848,17 @@ public class CPU6502 implements Runnable {
 
 		break;
 		case("ZPG"):
-			Operand = (short) Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter));
+			Operand = (short) Memory.readFromMemoryLocation(getPC());
 		incrementPC();
 
 		break;
 		case("ZPX"):
-			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexX))));
+			Operand = (short) (Memory.readFromMemoryLocation(getPC()) + getX());
 		incrementPC();
 
 		break;
 		case("ZPY"):
-			Operand = (short) (Short.toUnsignedInt((short) (Short.toUnsignedInt(Memory.readFromMemoryLocation(ProgramCounter)) + Byte.toUnsignedInt(IndexY))));
+			Operand = (short) (Memory.readFromMemoryLocation(getPC()) + getY());
 		incrementPC();
 
 		break;
@@ -838,7 +885,7 @@ public class CPU6502 implements Runnable {
 
 			break;
 		case("AND"):
-			Accumulator = (byte) (Byte.toUnsignedInt(Accumulator) & Short.toUnsignedInt(Operand));
+			Accumulator = (byte) (getA() & Short.toUnsignedInt(Operand));
 
 			break;
 		case("ASL"):
@@ -850,7 +897,7 @@ public class CPU6502 implements Runnable {
 		case("BCC"):
 			if(getStatusFlag('C') == false)
 			{
-				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				ProgramCounter = (short) (getPC() + Short.toUnsignedInt(Operand));
 				
 			}
 
@@ -858,7 +905,7 @@ public class CPU6502 implements Runnable {
 		case("BCS"):
 			if(getStatusFlag('C') == true)
 			{
-				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				ProgramCounter = (short) (getPC() + Short.toUnsignedInt(Operand));
 				
 			}
 
@@ -866,14 +913,14 @@ public class CPU6502 implements Runnable {
 		case("BEQ"):
 			if(getStatusFlag('Z') == true)
 			{
-				ProgramCounter = (short) (Short.toUnsignedInt(ProgramCounter) + Short.toUnsignedInt(Operand));
+				ProgramCounter = (short) (getPC() + Short.toUnsignedInt(Operand));
 				
 			}
 
 			break;
 		case("BIT"):
-			byte Bit6 = (Operand & 0xBF) - 64;
-			byte Bit7 = (Operand & 0x7F) - 128;
+			byte Bit6 = (byte) ((Operand & 0xBF) - 64);
+			byte Bit7 = (byte) ((Operand & 0x7F) - 128);
 
 			break;
 		case("BMI"):
@@ -956,6 +1003,7 @@ public class CPU6502 implements Runnable {
 
 			break;
 		case("NOP"):
+			//Complete - nothing
 
 			break;
 		case("ORA"):

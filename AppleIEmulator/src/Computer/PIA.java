@@ -38,16 +38,16 @@ public class PIA {
 				bValidChar = false;
 				
 			}
-			else if(iASCIIValue < 32)
-			{
-				iASCIIValue = 32;
-				
-			}
-			else if(iASCIIValue > 95)
-			{
-				iASCIIValue = 95;
-				
-			}
+//			else if(iASCIIValue < 32)
+//			{
+//				iASCIIValue = 32;
+//				
+//			}
+//			else if(iASCIIValue > 95)
+//			{
+//				iASCIIValue = 95;
+//				
+//			}
 			
 			if(bValidChar == true) Screen.drawNextCharacter(Byte.toUnsignedInt(iASCIIValue));
 			

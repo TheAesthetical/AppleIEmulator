@@ -24,9 +24,10 @@ public class RAM {
 		
 	}
 	
-	public byte readFromMemoryLocation(short MemoryLocation) 
+	//Int instead of byte because of change of signage, reduces boilerplate later
+	public int readFromMemoryLocation(int MemoryLocation) 
 	{		
-		return ComputerRAM[Short.toUnsignedInt(MemoryLocation)];
+		return Byte.toUnsignedInt(ComputerRAM[MemoryLocation]);
 		
 	}
 	
