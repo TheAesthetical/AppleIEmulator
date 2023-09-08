@@ -1,12 +1,15 @@
 package Terminal;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+
 import java.awt.*;
 
 import Main.Utilities;
 
 public class Monitor extends JPanel implements Runnable{
-	
+
 	private static final long serialVersionUID = 8168022962633428025L;
 
 	private Utilities Utils = new Utilities();
@@ -18,7 +21,7 @@ public class Monitor extends JPanel implements Runnable{
 	private final CharacterGenerator CharacterSet = new CharacterGenerator();
 	private final int iCharHeight = CharacterSet.getCharacterROM()[0].length;
 	private final int iCharWidth = CharacterSet.getCharacterROM()[0][0].length;
-	
+
 	private final int iCursorIndex = 64;
 	private final int iSpaceIndex = 32;
 
@@ -33,12 +36,55 @@ public class Monitor extends JPanel implements Runnable{
 	private int iRowShift = 0;
 	private int iCharsOnLine = 0;
 	private int iLinesOnScreen = 1;
-	
+
 	private JFrame Window;
 
-	public JFrame getWindow() 
+	JMenuItem On;
+	JMenuItem Off;
+	JMenuItem ResetButton;
+	JMenuItem CLSButton;
+	JMenuItem LF;
+	JMenuItem CR;
+
+	public Container getWindow() 
 	{
 		return Window;
+
+	}
+	
+	public JMenuItem getOn() 
+	{
+		return On;
+		
+	}
+
+	public JMenuItem getOff() 
+	{
+		return Off;
+		
+	}
+
+	public JMenuItem getResetButton() 
+	{
+		return ResetButton;
+		
+	}
+
+	public JMenuItem getCLSButton() 
+	{
+		return CLSButton;
+		
+	}
+
+	public JMenuItem getLF() 
+	{
+		return LF;
+		
+	}
+
+	public JMenuItem getCR() 
+	{
+		return CR;
 		
 	}
 
@@ -46,55 +92,92 @@ public class Monitor extends JPanel implements Runnable{
 
 	public Monitor(int iReqCellSize , String szWindowTitle) throws InterruptedException 
 	{
-		CELL_SIZE = iReqCellSize;
-		
-		Window = new JFrame(szWindowTitle);
-        
-		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
-		Window.setIconImage(WindowFavicon.getImage());
-		
-		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Window.setResizable(false);
-		
-		this.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE , GRID_HEIGHT * CELL_SIZE));
-		Window.getContentPane().add(this);
-		
-//		 JButton FileButton = new JButton("File");
-//		 FileButton.setSize(30, 30);
-//		 Window.add(FileButton, BorderLayout.SOUTH);
-//		
-//		 JButton ResetButton = new JButton("Reset");
-//		 ResetButton.setSize(30, 30);
-//		 Window.add(ResetButton, BorderLayout.SOUTH);
-		
-		Window.pack();
-		Window.setVisible(true);
-		
-		//createVRAM();
 		resetMonitor();
+
+		//createVRAM();
+
+		CELL_SIZE = iReqCellSize;
+
+		createGUI(szWindowTitle);
 		
 		start();
 
 	}
-	
-	//trying to achieve the dodgy uninitialised look about it
+
+	private void createGUI(String szWindowTitle) 
+	{
+		Window = new JFrame(szWindowTitle);
+
+		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
+		Window.setIconImage(WindowFavicon.getImage());
+
+		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Window.setResizable(false);
+
+		JMenuBar MenuBar = new JMenuBar();
+		MenuBar.setSize(GRID_WIDTH * CELL_SIZE , 10);
+
+		JMenu PowerSwitch = new JMenu("Power");
+		
+		On = new JMenuItem("On");
+		Off = new JMenuItem("Off");
+		
+		PowerSwitch.add(On);
+		PowerSwitch.add(Off);
+		
+		MenuBar.add(PowerSwitch);
+		
+		JMenu Switches = new JMenu("Switches");
+		
+		ResetButton = new JMenuItem("RESET");
+		CLSButton = new JMenuItem("CLS");
+		
+		Switches.add(ResetButton);
+		Switches.add(CLSButton);
+		
+		MenuBar.add(Switches);
+		
+		JMenu SpecialKeys = new JMenu("Other Keys");
+		
+		LF = new JMenuItem("Line Feed");
+		CR = new JMenuItem("Carriage Return");
+		
+		SpecialKeys.add(LF);
+		SpecialKeys.add(CR);
+		
+		MenuBar.add(SpecialKeys);
+		
+		Window.add(MenuBar , BorderLayout.SOUTH);
+
+		this.setPreferredSize(new Dimension(GRID_WIDTH * CELL_SIZE , GRID_HEIGHT * CELL_SIZE));
+		Window.getContentPane().add(this);
+		//Screen.add(this);
+
+		Window.pack();
+		Window.setVisible(true);
+
+	}
+
+	//trying to achieve the weird uninitialised look about it
 	private void createVRAM()
 	{
 		for (int i = 0; i < 22; i++) 
 		{
 			for (int j = 0; j < 40; j++) 
 			{
-				
-				
+
+
 
 			} 
-			
+
 		}
-		
+
 	}
 
 	public void resetMonitor()
 	{
+		Window = null;
+
 		iColumnShift = 0;
 		iRowShift = 0;
 		iCharsOnLine = 0;
@@ -114,7 +197,7 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public void carriageReturn() throws InterruptedException
+	public void carriageReturn()
 	{
 		int iCurrentCharsOnLine = iCharsOnLine;
 
@@ -184,6 +267,7 @@ public class Monitor extends JPanel implements Runnable{
 	private void displayCharacter(int iReqCharIndex) 
 	{
 		int iCharIndex = CharacterSet.convertCharASCIIIndex(iReqCharIndex);
+		//System.out.println(Integer.toBinaryString(iCharIndex));
 
 		for (int i = 0; i < iCharHeight; i++) 
 		{
@@ -227,7 +311,7 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	private void start() 
+	public void start() 
 	{	
 		CursorThread = new Thread (this , "Cursor Thread");
 		CursorThread.start();

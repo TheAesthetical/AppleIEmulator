@@ -28,7 +28,7 @@ public class ROM {
 
 	}
 	
-	public byte[] getComputerROM() 
+	public byte[] getROM() 
 	{
 		return ComputerROM;
 		

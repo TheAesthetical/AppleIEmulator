@@ -359,11 +359,9 @@ public class CPU6502 implements Runnable {
 
 	public void resetCPU()
 	{
-
-		Memory = null;
-
 		Accumulator = 0x00;
 
+		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
 		StackPointer = 0x00;
 
 		IndexX = 0x00;
@@ -377,6 +375,7 @@ public class CPU6502 implements Runnable {
 		ClockCycles = 0;
 
 		initaliseOpcodeMatrix();
+		
 
 	}
 
@@ -420,11 +419,11 @@ public class CPU6502 implements Runnable {
 		
 	}
 	
-	private int getSF() 
-	{
-		return Byte.toUnsignedInt(StatusFlags);
-		
-	}
+//	private int getSF() 
+//	{
+//		return Byte.toUnsignedInt(StatusFlags);
+//		
+//	}
 	
 	private int getHI() 
 	{
@@ -445,11 +444,12 @@ public class CPU6502 implements Runnable {
 
 	public CPU6502(RAM ComputerRAM) throws InterruptedException
 	{
-		resetCPU();
-
 		Memory = ComputerRAM;
 		
-		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
+		resetCPU();
+		
+		//Test for ACI
+		//ProgramCounter = (short) 0xC100;
 
 	}
 
@@ -679,7 +679,7 @@ public class CPU6502 implements Runnable {
 			TimeUnit.MICROSECONDS.sleep(ClockCycles - CycleTime);
 
 			//HAS TO BE AN EVEN INTEGER IN EXPRESSION OTHERWISE THERE WILL BE AN INFINITE LOOP
-		} while (getPC() != 0x0);
+		} while (getPC() != 0x0000);
 		
 		dumpCPU();
 

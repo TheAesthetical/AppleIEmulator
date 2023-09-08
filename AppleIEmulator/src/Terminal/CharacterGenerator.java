@@ -824,7 +824,23 @@ public class CharacterGenerator {
 	
 	public int convertCharASCIIIndexAMEND(int iReqCharIndex) 
 	{
-		return 0;
+		//TODO fix this heap of garbage
+		
+	    // Drop bit 5 (counting from 0) by clearing it
+		iReqCharIndex = iReqCharIndex & ( ~((~(iReqCharIndex >> 5) & 1) << 5));
+		System.out.println(((iReqCharIndex >> 5) & 1));
+		
+		 // Invert bit 6 using XOR (^) with 1
+		iReqCharIndex = iReqCharIndex ^ (((iReqCharIndex >> 4) & 1) << 4);
+		System.out.println(((iReqCharIndex >> 4) & 1));
+		
+	    
+		//iReqCharIndex = iReqCharIndex ^ (1 << 6);
+
+		
+		//return ((iReqCharIndex & 0xDF) ^ 0x40);
+		return iReqCharIndex;
+		
 	}
 
 	//By ASCII Code

@@ -4,17 +4,11 @@ public class RAM {
 	
 	private byte[] ComputerRAM;
 	
-	public RAM(int iAddressBusWidth , ROM BootstrapROM) 
+	public RAM(int iAddressBusWidth , ROM BootstrapROM , ACI BootstrapACI) 
 	{
 		ComputerRAM = new byte[((int) Math.pow(2 , iAddressBusWidth))];
 		
-		for (int i = 0; i < ComputerRAM.length; i++) 
-		{
-			ComputerRAM[i] = 0x00;
-			
-		}
-		
-		bootstrapROM(BootstrapROM , (short) 0xFF00);
+		resetMemory(BootstrapROM , BootstrapACI);
 		
 	}
 	
@@ -37,13 +31,25 @@ public class RAM {
 		
 	}
 	
-	public void bootstrapROM(ROM LoadROM , short StartMemoryLocation) 
+	public void resetMemory(ROM BootstrapROM , ACI BootstrapACI) 
 	{	
-		ROM ComputerROM = LoadROM;
-		
-		for (int i = 0; i < ComputerROM.getComputerROM().length; i++) 
+		for (int i = 0; i < ComputerRAM.length; i++) 
 		{
-			ComputerRAM[i + Short.toUnsignedInt(StartMemoryLocation)] = ComputerROM.getComputerROM()[i];
+			ComputerRAM[i] = 0x00;
+			
+		}
+		 
+		bootstrapROMS(BootstrapROM.getROM() , (short) 0xFF00);
+		//TODO ACI bootstrapping into C100
+		bootstrapROMS(BootstrapACI.getROM() , (short) 0xC100);
+		
+	}
+	
+	private void bootstrapROMS(byte[] ContentStream , short StartMemoryLocation) 
+	{	
+		for (int i = 0; i < ContentStream.length; i++) 
+		{
+			ComputerRAM[i + Short.toUnsignedInt(StartMemoryLocation)] = ContentStream[i];
 				
 		}
 		
