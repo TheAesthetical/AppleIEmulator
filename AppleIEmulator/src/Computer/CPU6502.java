@@ -361,7 +361,6 @@ public class CPU6502 implements Runnable {
 	{
 		Accumulator = 0x00;
 
-		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
 		StackPointer = 0x00;
 
 		IndexX = 0x00;
@@ -377,6 +376,12 @@ public class CPU6502 implements Runnable {
 		initaliseOpcodeMatrix();
 		
 
+	}
+	
+	public void resetPC()
+	{
+		ProgramCounter = resetVector((short) 0xFFFC , (short) 0xFFFD);
+		
 	}
 
 	private short resetVector(short LoByteLocation , short HiByteLocation)
@@ -450,12 +455,6 @@ public class CPU6502 implements Runnable {
 		
 		//Test for ACI
 		//ProgramCounter = (short) 0xC100;
-
-	}
-
-	public void start() throws InterruptedException 
-	{
-		startCycle();
 
 	}
 
@@ -661,7 +660,7 @@ public class CPU6502 implements Runnable {
 	//Fetch-Decode-Execute Cycle
 	//===================================================================
 
-	private void startCycle() throws InterruptedException
+	public void startCycle() throws InterruptedException
 	{
 		do
 		{

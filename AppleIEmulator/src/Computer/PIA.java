@@ -21,19 +21,23 @@ public class PIA {
 		Memory = activeRAM;
 		Screen = activeScreen;
 
-		keyboardHandler();
-		
-		switchHandler();
-		otherkeysHandler();
-
 	}
 
-	private void reset() 
+	public void reset() 
 	{
 		CPU = null;
 		Memory = null;
 		Screen = null;
 
+	}
+	
+	public void enableHandlers() 
+	{
+		keyboardHandler();
+		
+		switchHandler();
+		otherkeysHandler();
+		
 	}
 
 	private void keyboardHandler() 
@@ -47,7 +51,7 @@ public class PIA {
 				char chCharacterPressed = e.getKeyChar();
 				byte iASCIIValue = (byte) chCharacterPressed;
 
-				System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + iASCIIValue + ")");
+				//System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + iASCIIValue + ")");
 
 				if(bValidChar == true) Screen.drawNextCharacter(Byte.toUnsignedInt(iASCIIValue));
 
@@ -73,12 +77,15 @@ public class PIA {
 			public void actionPerformed(ActionEvent e) 
 			{
 				System.out.println("RESET");
+				
 				Screen.resetMonitor();
+				
 				CPU.resetCPU();
+				CPU.resetPC();
 				
 				try 
 				{
-					CPU.start();
+					CPU.startCycle();
 					
 				} 
 				catch (InterruptedException e1) 

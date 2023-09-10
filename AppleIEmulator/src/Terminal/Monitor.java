@@ -30,7 +30,7 @@ public class Monitor extends JPanel implements Runnable{
 
 	private int CELL_SIZE;
 
-	private Thread CursorThread;
+	private Thread CursorThread = new Thread (this , "Cursor Thread");
 
 	private int iColumnShift = 0;
 	private int iRowShift = 0;
@@ -159,20 +159,20 @@ public class Monitor extends JPanel implements Runnable{
 	}
 
 	//trying to achieve the weird uninitialised look about it
-	private void createVRAM()
-	{
-		for (int i = 0; i < 22; i++) 
-		{
-			for (int j = 0; j < 40; j++) 
-			{
-
-
-
-			} 
-
-		}
-
-	}
+//	private void createVRAM()
+//	{
+//		for (int i = 0; i < 22; i++) 
+//		{
+//			for (int j = 0; j < 40; j++) 
+//			{
+//
+//
+//
+//			} 
+//
+//		}
+//
+//	}
 
 	public void resetMonitor()
 	{
@@ -192,8 +192,11 @@ public class Monitor extends JPanel implements Runnable{
 			}
 
 		}
-
+		
+		CursorThread.suspend();
+		
 		repaint();
+		
 
 	}
 
@@ -310,12 +313,24 @@ public class Monitor extends JPanel implements Runnable{
 		} while(CursorThread.isAlive() == true);
 
 	}
-
+	
 	public void start() 
 	{	
-		CursorThread = new Thread (this , "Cursor Thread");
 		CursorThread.start();
+		CursorThread.suspend();
+		
+	}
+	
+	public void resume() 
+	{	
+		CursorThread.resume();
 
+	}
+	
+	public void stop() 
+	{	
+		CursorThread.suspend();
+		
 	}
 
 	protected void paintComponent(Graphics g) 
@@ -327,17 +342,20 @@ public class Monitor extends JPanel implements Runnable{
 			for (int j = 0; j < GRID_WIDTH; j++) 
 			{
 				if (bPixelGrid[i][j] == true) 
-				{
+				{				
+					g.setColor(Color.getHSBColor((120.0f / 360) , 1.0f , 0.4f));
+					g.fillRect((j * CELL_SIZE) , (i * CELL_SIZE) , CELL_SIZE , CELL_SIZE);
+					
 					g.setColor(Color.GREEN);
+					g.fillRect((j * CELL_SIZE) , (i * CELL_SIZE) , CELL_SIZE , (CELL_SIZE / 2));
 
 				} 
 				else 
 				{
 					g.setColor(Color.BLACK);
-
+					g.fillRect((j * CELL_SIZE) , (i * CELL_SIZE) , CELL_SIZE , CELL_SIZE);
+					
 				}
-
-				g.fillRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
 			}
 
