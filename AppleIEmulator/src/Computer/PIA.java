@@ -13,31 +13,52 @@ public class PIA {
 	private RAM Memory;
 	private Monitor Screen;
 
+	//PIA variables in ram - Check Apple 1 owners manual!
+	private short KBD = (short) 0xD010;
+	private short KBDCR = (short) 0xD011;
+	private short DSP = (short) 0xD012;
+	private short DSPCR = (short) 0xD013;
+
 	public PIA(CPU6502 activeCPU , RAM activeRAM , Monitor activeScreen) throws InterruptedException 
 	{
-		reset();
+		resetPIA();
 
+		initalisePIA(activeCPU , activeRAM , activeScreen);
+		
+		enableKeyHandlers();
+
+	}
+
+	public void resetPIA() 
+	{
+		//		Screen.getWindow().removeKeyListener(null);
+		//		
+		//		Screen.getResetButton().removeActionListener(null);
+		//		Screen.getCLSButton().removeActionListener(null);
+		//		
+		//		Screen.getLF().removeActionListener(null);
+		//		Screen.getCR().removeActionListener(null);
+
+		CPU = null;
+		Memory = null;
+		Screen = null;
+
+	}
+
+	public void initalisePIA(CPU6502 activeCPU , RAM activeRAM , Monitor activeScreen) 
+	{
 		CPU = activeCPU;
 		Memory = activeRAM;
 		Screen = activeScreen;
 
 	}
 
-	public void reset() 
-	{
-		CPU = null;
-		Memory = null;
-		Screen = null;
-
-	}
-	
-	public void enableHandlers() 
+	private void enableKeyHandlers() 
 	{
 		keyboardHandler();
-		
 		switchHandler();
 		otherkeysHandler();
-		
+
 	}
 
 	private void keyboardHandler() 
@@ -46,21 +67,22 @@ public class PIA {
 		{
 			public void keyTyped(KeyEvent e) 
 			{
-				boolean bValidChar = true;
-
 				char chCharacterPressed = e.getKeyChar();
 				byte iASCIIValue = (byte) chCharacterPressed;
 
 				//System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + iASCIIValue + ")");
 
-				if(bValidChar == true) Screen.drawNextCharacter(Byte.toUnsignedInt(iASCIIValue));
+				if(Screen != null && Screen.getIsResetted() == true) 
+				{
+					Screen.drawNextCharacter(iASCIIValue);
+
+				}
 
 			}
 			public void keyPressed(KeyEvent e) 
 			{
 
 			}
-
 			public void keyReleased(KeyEvent e) 
 			{
 
@@ -77,21 +99,27 @@ public class PIA {
 			public void actionPerformed(ActionEvent e) 
 			{
 				System.out.println("RESET");
-				
-				Screen.resetMonitor();
-				
-				CPU.resetCPU();
-				CPU.resetPC();
-				
-				try 
+
+				if(Screen != null && CPU != null)
 				{
-					CPU.startCycle();
-					
-				} 
-				catch (InterruptedException e1) 
-				{
-					e1.printStackTrace();
-					
+					Screen.setIsResetted(true);
+					Screen.resetMonitor();
+					Screen.setCursorActive(true);
+
+					CPU.resetCPU();
+					CPU.resetVector();
+
+					try 
+					{
+						CPU.startFetchExecute();
+
+					} 
+					catch (InterruptedException e1) 
+					{
+						e1.printStackTrace();
+
+					}
+
 				}
 
 			}
@@ -102,7 +130,11 @@ public class PIA {
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				Screen.resetMonitor();
+				if(Screen != null)
+				{
+					Screen.resetMonitor();
+
+				}
 
 			}
 
@@ -129,7 +161,7 @@ public class PIA {
 			}
 
 		});
-		
+
 	}
 
 }

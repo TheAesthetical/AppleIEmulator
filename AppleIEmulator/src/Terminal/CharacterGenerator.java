@@ -778,67 +778,27 @@ public class CharacterGenerator {
 
 	};
 	
-	public int convertCharASCIIIndex(int iReqCharIndex) 
+	public byte convertCharASCIIIndex(byte iReqCharIndex) 
 	{
-		String szReqCharIndexBinary;
-		int iASCIICharIndex;
+		//System.out.println("1. " + Integer.toBinaryString(iReqCharIndex));
 		
-		szReqCharIndexBinary = Integer.toBinaryString(iReqCharIndex);
+		byte byBitMask = (byte) (iReqCharIndex & 0b0001111);
 		
-		int iOGReqCharIndexBinaryLength = szReqCharIndexBinary.length();
+	      if (iReqCharIndex < 0b00100000) 
+	      {
+	    	  iReqCharIndex = (byte) (iReqCharIndex - 0b01100000);
+	    	  
+	      }
+	      if (iReqCharIndex >= 0b01100000) 
+	      {
+	    	  iReqCharIndex = (byte) (iReqCharIndex - 0b01100000);
+	    	  
+	      }
+	      
+	     iReqCharIndex = (byte) ((0b0110000 & iReqCharIndex) + byBitMask);
+	     // iReqCharIndex = iReqCharIndex + mask;
 		
-		//System.out.println("1. " + szReqCharIndexBinary);
-		
-		for (int i = 0; i < (7 - iOGReqCharIndexBinaryLength); i++) 
-		{
-			szReqCharIndexBinary = 0 + szReqCharIndexBinary;
-			
-		}
-		
-		//System.out.println("2. " + szReqCharIndexBinary);
-		
-		szReqCharIndexBinary = szReqCharIndexBinary.charAt(0) + szReqCharIndexBinary.substring(2 , 7);
-		
-		//System.out.println("3. " + szReqCharIndexBinary);
-		
-		if(szReqCharIndexBinary.charAt(0) == '1')
-		{
-			szReqCharIndexBinary = szReqCharIndexBinary.substring(1 , 6);
-			szReqCharIndexBinary = 0 + szReqCharIndexBinary.substring(0);
-			
-		}
-		else if((szReqCharIndexBinary.charAt(0) == '0'))
-		{
-			szReqCharIndexBinary = szReqCharIndexBinary.substring(1 , 6);
-			szReqCharIndexBinary = 1 + szReqCharIndexBinary.substring(0);
-			
-		}
-		
-		iASCIICharIndex = Integer.parseInt(szReqCharIndexBinary , 2);  
-		
-		//System.out.println("4. " + szReqCharIndexBinary + " " + iASCIICharIndex);
-		
-		return iASCIICharIndex;
-		
-	}
-	
-	public int convertCharASCIIIndexAMEND(int iReqCharIndex) 
-	{
-		//TODO fix this heap of garbage
-		
-	    // Drop bit 5 (counting from 0) by clearing it
-		iReqCharIndex = iReqCharIndex & ( ~((~(iReqCharIndex >> 5) & 1) << 5));
-		System.out.println(((iReqCharIndex >> 5) & 1));
-		
-		 // Invert bit 6 using XOR (^) with 1
-		iReqCharIndex = iReqCharIndex ^ (((iReqCharIndex >> 4) & 1) << 4);
-		System.out.println(((iReqCharIndex >> 4) & 1));
-		
-	    
-		//iReqCharIndex = iReqCharIndex ^ (1 << 6);
-
-		
-		//return ((iReqCharIndex & 0xDF) ^ 0x40);
+		//System.out.println("S. " + Integer.toBinaryString(iReqCharIndex));
 		return iReqCharIndex;
 		
 	}

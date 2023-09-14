@@ -8,7 +8,7 @@ public class RAM {
 	{
 		ComputerRAM = new byte[((int) Math.pow(2 , iAddressBusWidth))];
 		
-		initaliseMemory(BootstrapROM , BootstrapACI);
+		resetMemory(BootstrapROM , BootstrapACI);
 		
 	}
 	
@@ -31,7 +31,7 @@ public class RAM {
 		
 	}
 	
-	private void initaliseMemory(ROM BootstrapROM , ACI BootstrapACI) 
+	public void resetMemory(ROM BootstrapROM , ACI BootstrapACI) 
 	{	
 		for (int i = 0; i < ComputerRAM.length; i++) 
 		{

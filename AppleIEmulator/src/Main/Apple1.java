@@ -2,6 +2,8 @@ package Main;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import Computer.*;
 import Terminal.Monitor;
@@ -12,12 +14,12 @@ public class Apple1 {
 	private RAM Memory;
 	private CPU6502 CPU;
 	private PIA InOut;
-	
+
 	private boolean bEmulatorPaused;
 	private boolean bEmulatorRun;
-	
+
 	Thread mainEmulatorThread;
-	
+
 	public Apple1(Monitor tempScreen, RAM tempMemory, CPU6502 tempCPU, PIA tempInOut)
 	{
 		Screen = tempScreen;
@@ -25,15 +27,19 @@ public class Apple1 {
 		CPU = tempCPU;
 		InOut = tempInOut;
 		
-		reset();
-		
+		InOut.resetPIA();
+
+		//Screen.setCursorActive(true);
+
+		startEmulator();
+
 	}
-	
-	private void reset()
+
+	private void startEmulator()
 	{
 		Screen.getOn().setVisible(true);
 		Screen.getOff().setVisible(false);
-		
+
 		Screen.getOn().addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
@@ -42,15 +48,11 @@ public class Apple1 {
 
 				if (bEmulatorRun == false)
 				{
-					//	                    DEBUG - Force Load Game ROMs
-					//	                    CPU.getMainMemory().loadRom(new File("C:\\Users\\lukew\\Desktop\\Gameboy Emulator Project\\Documents\\ROMs\\TETRIS.gb"));
-
 					mainEmulatorThread = new Thread(mainPowerOn);
-					//	                    saveStateHandlingThread = new Thread(saveStateHandling);
 					bEmulatorPaused = false;
 					bEmulatorRun = true;
 					mainEmulatorThread.start();
-					//	                    saveStateHandlingThread.start();
+					
 				}
 				else
 				{
@@ -59,31 +61,34 @@ public class Apple1 {
 
 				Screen.getOn().setVisible(false);
 				Screen.getOff().setVisible(true);
-				
+
 			}
-			
+
 		});
-		
+
 		Screen.getOff().addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
-			{
-				Screen.stop();
+			{			
+				InOut.resetPIA();
+				CPU.resetCPU();
+
+				Screen.setCursorActive(false);
 				Screen.resetMonitor();
 				
-				InOut.reset();
-				
+				Screen.setIsResetted(true);
+
 				System.out.println("Power OFF pressed!");
 
 				bEmulatorRun = false;
-				
+
 				Screen.getOn().setVisible(true);
 				Screen.getOff().setVisible(false);
-				
+
 			}
-			
+
 		});
-		
+
 	}
 
 	Runnable mainPowerOn = () ->
@@ -91,34 +96,45 @@ public class Apple1 {
 
 		//iStartTime = System.nanoTime();
 
-//		do
-//		{
-			if (bEmulatorPaused == false)
+		//		do
+		//		{
+		if (bEmulatorPaused == false)
+		{
+			Screen.resetMonitor();
+			Screen.setIsResetted(false);
+			
+			InOut.initalisePIA(CPU , Memory , Screen);
+		
+			try 
 			{
-				CPU.resetCPU();
+				Screen.powerOnMonitor();
 				
-				InOut.enableHandlers();
-				
-				Screen.resetMonitor();
-				
-				Screen.resume();
-
 			}
+			catch (InterruptedException e) 
+			{
+				e.printStackTrace();
+				
+			}
+			
+			CPU.resetCPU();
+			CPU.resetVector();
 
-//			while (bEmulatorPaused == false && bEmulatorRun == true)
+		}
+
+		while (bEmulatorPaused == false && bEmulatorRun == true)
+		{
+//			if (CPU.getClockCycles() < 29830)
 //			{
-				//	                if (CPU.getCpuCycles() < 29830)
-				//	                {
 //				try 
 //				{
-//					//CPU.startCycle();
-//					
+//
+//
 //				} 
 //				catch (InterruptedException e) 
 //				{
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
-//					
+//
 //				}
 				//	                }
 				//	                else
@@ -133,23 +149,30 @@ public class Apple1 {
 				//	                    
 				//	                    iStartTime = System.nanoTime();
 				//	                }
-//			}
+
+			//}
 
 			try 
 			{
 				Thread.sleep(25);
+				
 			} 
 			catch (InterruptedException e) 
 			{
 				e.printStackTrace();
+				
 			}
-			
-//		} while (bEmulatorRun == true);
-			
+
+		} while (bEmulatorRun == true);
+
 	};
 
 	public static void main(String[] args) throws InterruptedException
 	{		
+		Properties SmootherGUI = System.getProperties();
+		SmootherGUI.put ("sun.java2d.d3d" , "false");
+		System.setProperties (SmootherGUI);
+		
 		//You can adjust this accordingly to your eyesight needs
 		final int iMonitorScale = 3;
 
@@ -177,4 +200,5 @@ public class Apple1 {
 		Apple1 A1Emulator = new Apple1(Screen , MemoryRAM , CPU , InOut);
 
 	}
+	
 }
