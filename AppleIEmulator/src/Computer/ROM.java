@@ -14,9 +14,7 @@ public class ROM {
 		ComputerROM = new byte[((int) Math.pow(2 , iAddressBusSize))];
 
 		try (FileInputStream inputStream = new FileInputStream(Utils.getDirectoryName() + "\\" + szROMFileName + ".bin")) 
-		{
-           // while ((BytesRead = inputStream.read(ComputerROM)) != -1);
-			
+		{	
 			inputStream.read(ComputerROM, 0, ComputerROM.length);
 
 		} 

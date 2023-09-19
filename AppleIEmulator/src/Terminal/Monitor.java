@@ -47,10 +47,16 @@ public class Monitor extends JPanel implements Runnable{
 
 	JMenuItem On;
 	JMenuItem Off;
+	
 	JMenuItem ResetButton;
 	JMenuItem CLSButton;
-	JMenuItem LF;
-	JMenuItem CR;
+	
+//	JMenuItem LF;
+//	JMenuItem CR;
+//	JMenuItem RO;
+	
+	JMenuItem LoadCassette;
+	JMenuItem ClearCassette;
 
 	public Container getWindow() 
 	{
@@ -82,17 +88,23 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public JMenuItem getLF() 
-	{
-		return LF;
-
-	}
-
-	public JMenuItem getCR() 
-	{
-		return CR;
-
-	}
+//	public JMenuItem getLF() 
+//	{
+//		return LF;
+//
+//	}
+//
+//	public JMenuItem getCR() 
+//	{
+//		return CR;
+//
+//	}
+//	
+//	public JMenuItem getRO() 
+//	{
+//		return RO;
+//
+//	}
 
 	public boolean getCursorActive() 
 	{
@@ -173,15 +185,27 @@ public class Monitor extends JPanel implements Runnable{
 
 		MenuBar.add(Switches);
 
-		JMenu SpecialKeys = new JMenu("Other Keys");
-
-		LF = new JMenuItem("Line Feed");
-		CR = new JMenuItem("Carriage Return");
-
-		SpecialKeys.add(LF);
-		SpecialKeys.add(CR);
-
-		MenuBar.add(SpecialKeys);
+//		JMenu SpecialKeys = new JMenu("Other Keys");
+//
+//		CR = new JMenuItem("Carriage Return");
+//		LF = new JMenuItem("Line Feed");
+//		RO = new JMenuItem("Rub Out");
+//
+//		SpecialKeys.add(LF);
+//		SpecialKeys.add(CR);
+//		SpecialKeys.add(RO);
+//
+//		MenuBar.add(SpecialKeys);
+		
+		JMenu ACIInterface = new JMenu("ACI");
+		
+		LoadCassette = new JMenuItem("Load");
+		ClearCassette = new JMenuItem("Clear");
+		
+		ACIInterface.add(LoadCassette);
+		ACIInterface.add(ClearCassette);
+		
+		MenuBar.add(ACIInterface);
 
 		Window.add(MenuBar , BorderLayout.SOUTH);
 
@@ -190,7 +214,7 @@ public class Monitor extends JPanel implements Runnable{
 		//Screen.add(this);
 
 		Window.pack();
-		Window.setVisible(true);
+		Window.setVisible(false);
 
 	}
 
@@ -200,11 +224,11 @@ public class Monitor extends JPanel implements Runnable{
 		byte byUnderscoreIndex = 95;
 		byte byBlinkIndex = 64;
 
-		do {
-
+		do 
+		{
 			for (int i = 0; i < iTotalLinesOnScreen; i++) 
 			{
-				for (int j = 0; j < iTotalCharsOnLine; j++) 
+				for (int j = 0; j < (iTotalCharsOnLine / 2); j++) 
 				{
 					drawNextCharacter(byUnderscoreIndex);
 					drawNextCharacter(byBlinkIndex);
@@ -224,6 +248,8 @@ public class Monitor extends JPanel implements Runnable{
 			}
 
 			Thread.sleep(iCursorSleepTimeMS);
+			
+			resetMonitor();
 
 		} while(bIsResetted == false);
 

@@ -2,7 +2,7 @@ package Terminal;
 
 public class CharacterGenerator {
 
-	private final boolean[][][] CharacterROM = {
+	private final boolean[][][] bCharacterROM = {
 
 			//@ - 000000
 			{ 	{false , false , false , false , false} , 
@@ -778,35 +778,35 @@ public class CharacterGenerator {
 
 	};
 	
-	public byte convertCharASCIIIndex(byte iReqCharIndex) 
+	public byte convertCharASCIIIndex(byte byReqCharIndex) 
 	{
 		//System.out.println("1. " + Integer.toBinaryString(iReqCharIndex));
 		
-		byte byBitMask = (byte) (iReqCharIndex & 0b0001111);
+		byte byBitMask = (byte) (byReqCharIndex & 0b0001111);
 		
-	      if (iReqCharIndex < 0b00100000) 
+	      if (byReqCharIndex < 0b00100000) 
 	      {
-	    	  iReqCharIndex = (byte) (iReqCharIndex - 0b01100000);
-	    	  
-	      }
-	      if (iReqCharIndex >= 0b01100000) 
-	      {
-	    	  iReqCharIndex = (byte) (iReqCharIndex - 0b01100000);
+	    	  byReqCharIndex = (byte) (byReqCharIndex - 0b01100000);
 	    	  
 	      }
 	      
-	     iReqCharIndex = (byte) ((0b0110000 & iReqCharIndex) + byBitMask);
-	     // iReqCharIndex = iReqCharIndex + mask;
+	      if (byReqCharIndex >= 0b01100000) 
+	      {
+	    	  byReqCharIndex = (byte) (byReqCharIndex - 0b01100000);
+	    	  
+	      }
+	      
+	      byReqCharIndex = (byte) ((0b0110000 & byReqCharIndex) + byBitMask);
 		
 		//System.out.println("S. " + Integer.toBinaryString(iReqCharIndex));
-		return iReqCharIndex;
+		return byReqCharIndex;
 		
 	}
 
 	//By ASCII Code
 	public boolean[][][] getCharacterROM() 
 	{
-		return CharacterROM;
+		return bCharacterROM;
 
 	}
 
