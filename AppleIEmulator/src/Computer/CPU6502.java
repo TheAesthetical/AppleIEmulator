@@ -1,6 +1,5 @@
 package Computer;
 
-
 public class CPU6502 {
 	
 	private class Opcode {
@@ -40,7 +39,7 @@ public class CPU6502 {
 
 	//private final int iClockSpeedHZ = 1023000;
 
-//	private RAM Memory;
+	private RAM Memory;
 //
 //	private byte byAccumulator = (byte) 0x00;
 //
@@ -51,42 +50,31 @@ public class CPU6502 {
 //	private byte byIndexY = (byte) 0x00;
 //
 //	private byte byStatusFlags = (byte) 0b00100000;
-//
-//	private boolean bInterrupt = false;
-//	private boolean bNonMaskableInterrupt = false;
-//
-//	private Opcode[] OpcodeMatrix = new Opcode[255];
-//
-//	private byte byLoByte = (byte) 0x00;
-//	private byte byHiByte = (byte) 0x00;
-//
-//	private long lCurrentClockCycles = 0;
-//
-//	private boolean bRunning = false;
 	
-	protected RAM Memory;
+	// -----------------------------------------------
+	// Debug
+	public byte byAccumulator = (byte) 0x00;
 
-	protected byte byAccumulator = (byte) 0x00;
+	public short shProgramCounter = (short) 0x0000;
+	public byte byStackPointer = (byte) 0xFD; //0x0100 - 0x01FF
 
-	protected short shProgramCounter = (short) 0x0000;
-	protected byte byStackPointer = (byte) 0xFD; //0x0100 - 0x01FF
+	public byte byIndexX = (byte) 0x00;
+	public byte byIndexY = (byte) 0x00;
 
-	protected byte byIndexX = (byte) 0x00;
-	protected byte byIndexY = (byte) 0x00;
+	public byte byStatusFlags = (byte) 0b00100000;
+	// -----------------------------------------------
 
-	protected byte byStatusFlags = (byte) 0b00100000;
+	private boolean bInterrupt = false;
+	private boolean bNonMaskableInterrupt = false;
 
-	protected boolean bInterrupt = false;
-	protected boolean bNonMaskableInterrupt = false;
+	private Opcode[] OpcodeMatrix = new Opcode[255];
 
-	protected Opcode[] OpcodeMatrix = new Opcode[255];
+	private byte byLoByte = (byte) 0x00;
+	private byte byHiByte = (byte) 0x00;
 
-	protected byte byLoByte = (byte) 0x00;
-	protected byte byHiByte = (byte) 0x00;
+	private long lCurrentClockCycles = 0;
 
-	protected long lCurrentClockCycles = 0;
-
-	protected boolean bRunning = false;
+	private boolean bRunning = false;
 
 	private void initaliseOpcodeMatrix() 
 	{

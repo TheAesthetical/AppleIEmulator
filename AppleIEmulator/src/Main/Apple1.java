@@ -209,7 +209,7 @@ public class Apple1 {
 		//You can adjust this accordingly to your eyesight needs
 		final int iMonitorScale = 3;
 
-		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - PROTOTYPE - as useful as an actual apple rn");
+		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - as useful as an actual apple rn");
 
 		RAM MemoryRAM = new RAM(16);
 		
@@ -217,7 +217,7 @@ public class Apple1 {
 		ACI CassetteInterface = new ACI(8 , "ACI" , Screen , MemoryRAM);
 		
 		MemoryRAM.bootstrapROMS(StorageROM.getROM() , (short) 0xFF00);
-		MemoryRAM.bootstrapROMS(CassetteInterface.getROM() , (short) 0xC100);
+		//MemoryRAM.bootstrapROMS(CassetteInterface.getROM() , (short) 0xC100);
 
 		CPU6502 CPU = new CPU6502(MemoryRAM);
 		PIA InOut = new PIA(CPU , MemoryRAM , Screen);

@@ -4,10 +4,16 @@ public class RAM {
 	
 	private byte[] ComputerRAM;
 
-	public RAM(int iAddressBusWidth) 
+//	public RAM(int iAddressBusWidth) 
+//	{
+//		ComputerRAM = new byte[((int) Math.pow(2 , iAddressBusWidth))];
+//		
+//	}
+	
+	// Debug
+	public RAM()
 	{
-		ComputerRAM = new byte[((int) Math.pow(2 , iAddressBusWidth))];
-		
+		ComputerRAM = new byte[0x10000];
 	}
 	
 	public void write(short MemoryLocation , byte Data) 

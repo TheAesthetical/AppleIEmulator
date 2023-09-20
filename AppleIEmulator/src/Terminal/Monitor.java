@@ -50,12 +50,10 @@ public class Monitor extends JPanel implements Runnable{
 	
 	JMenuItem ResetButton;
 	JMenuItem CLSButton;
-	
-//	JMenuItem LF;
-//	JMenuItem CR;
-//	JMenuItem RO;
-	
-	JMenuItem LoadCassette;
+
+	JMenu LoadCassette;
+	JMenuItem IntegerBASIC;
+	JMenuItem Other;
 	JMenuItem ClearCassette;
 
 	public Container getWindow() 
@@ -87,24 +85,30 @@ public class Monitor extends JPanel implements Runnable{
 		return CLSButton;
 
 	}
+	
+	public JMenu getLoadCassette() 
+	{
+		return LoadCassette;
 
-//	public JMenuItem getLF() 
-//	{
-//		return LF;
-//
-//	}
-//
-//	public JMenuItem getCR() 
-//	{
-//		return CR;
-//
-//	}
-//	
-//	public JMenuItem getRO() 
-//	{
-//		return RO;
-//
-//	}
+	}
+	
+	public JMenuItem getIntegerBASIC() 
+	{
+		return IntegerBASIC;
+
+	}
+
+	public JMenuItem getOther() 
+	{
+		return Other;
+
+	}
+
+	public JMenuItem getClearCassette() 
+	{
+		return ClearCassette;
+
+	}
 
 	public boolean getCursorActive() 
 	{
@@ -139,8 +143,6 @@ public class Monitor extends JPanel implements Runnable{
 	public Monitor(int iReqCellSize , String szWindowTitle) throws InterruptedException 
 	{
 		resetMonitor();
-
-		//createVRAM();
 
 		iCellSize = iReqCellSize;
 
@@ -184,22 +186,16 @@ public class Monitor extends JPanel implements Runnable{
 		Switches.add(CLSButton);
 
 		MenuBar.add(Switches);
-
-//		JMenu SpecialKeys = new JMenu("Other Keys");
-//
-//		CR = new JMenuItem("Carriage Return");
-//		LF = new JMenuItem("Line Feed");
-//		RO = new JMenuItem("Rub Out");
-//
-//		SpecialKeys.add(LF);
-//		SpecialKeys.add(CR);
-//		SpecialKeys.add(RO);
-//
-//		MenuBar.add(SpecialKeys);
 		
 		JMenu ACIInterface = new JMenu("ACI");
 		
-		LoadCassette = new JMenuItem("Load");
+		LoadCassette = new JMenu("Load");
+		IntegerBASIC = new JMenuItem("Integer BASIC");
+		Other = new JMenuItem("Other...");
+		
+		LoadCassette.add(IntegerBASIC);
+		LoadCassette.add(Other);
+		
 		ClearCassette = new JMenuItem("Clear");
 		
 		ACIInterface.add(LoadCassette);
