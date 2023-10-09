@@ -109,8 +109,8 @@ public class Apple1 {
 		//		{
 		if (bEmulatorPaused == false)
 		{
-			System.out.println("hi");
-			System.exit(0);
+//			System.out.println("hicccc");
+//			System.exit(0);
 			
 			Screen.resetMonitor();
 			Screen.setIsResetted(false);

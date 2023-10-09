@@ -92,7 +92,7 @@ public class PIA {
 			
 			TimeUnit.MILLISECONDS.sleep((long) 16.7);
 			
-			//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Memory.read(Short.toUnsignedInt(shDSP)) - 0b10000000));
+			Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Memory.read(Short.toUnsignedInt(shDSP)) - 0b10000000));
 			//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (0b00000000));
 			
 			//Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) Byte.toUnsignedInt((byte) ((byte) (Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) - 0b10000000)));
@@ -103,10 +103,6 @@ public class PIA {
 			Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) 0b00000000);
 			
 			}
-			
-			Memory.write((short) Short.toUnsignedInt((short) 0x6969) , (byte) (0x69));
-			Memory.read(Short.toUnsignedInt((short) 0x6969));
-			System.exit(0);
 
 		}
 		

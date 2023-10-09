@@ -8,15 +8,21 @@ public class Utilities {
 		String[] szPathComponents = szProjectFolderPath.split("\\\\");
 		
 		String szProjectFolderName = szPathComponents[0];
+		//String szProjectFolderName = szPathComponents[szPathComponents.length];
 		
-		for (int i = szPathComponents.length - 1; i > 0; i--) 
+//		for (int i = szPathComponents.length - 1; i > 0; i--) 
+//		{
+//			szProjectFolderName = szProjectFolderName + "\\" + szPathComponents[i];
+//			
+//		}
+		
+		for (int i = 1; i < szPathComponents.length; i++) 
 		{
 			szProjectFolderName = szProjectFolderName + "\\" + szPathComponents[i];
-			
 		}
 		
 		szProjectFolderName = szProjectFolderName + "\\";
-
+		
 		return szProjectFolderName; 
 		
 	}
