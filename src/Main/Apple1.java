@@ -33,7 +33,7 @@ public class Apple1 {
 		Storage = tempStorage;
 
 		InOut.resetPIA();
-		
+
 		initaliseMemory();
 
 		//Screen.setCursorActive(true);
@@ -45,7 +45,7 @@ public class Apple1 {
 	private void emulate()
 	{
 		Screen.getWindow().setVisible(true);
-		
+
 		Screen.getOn().setVisible(true);
 		Screen.getOff().setVisible(false);
 
@@ -80,13 +80,13 @@ public class Apple1 {
 			public void actionPerformed(ActionEvent e) 
 			{			
 				System.out.println("Power OFF pressed!");
-				
+
 				bEmulatorRun = false;
 				Memory.resetMemory();
-				
+
 				Screen.setIsResetted(true);
 				Screen.setCursorActive(false);
-				
+
 				Screen.resetMonitor();
 				InOut.resetPIA();
 				CPU.resetCPU();
@@ -109,9 +109,9 @@ public class Apple1 {
 		//		{
 		if (bEmulatorPaused == false)
 		{
-//			System.out.println("hicccc");
-//			System.exit(0);
-			
+			//			System.out.println("hicdasdasdasdasccc");
+			//			System.exit(0);
+
 			Screen.resetMonitor();
 			Screen.setIsResetted(false);
 
@@ -127,7 +127,7 @@ public class Apple1 {
 				e.printStackTrace();
 
 			}
-			
+
 			initaliseMemory();
 
 			CPU.resetCPU();
@@ -140,37 +140,36 @@ public class Apple1 {
 			if(CPU.getisRunning() == true)
 			{
 
-//				do
-//				{
+				//				do
+				//				{
 
-					try 
-					{	
-						long lPreCycleTime = System.nanoTime();
+				try 
+				{	
+					long lPreCycleTime = System.nanoTime();
 
-						CPU.executeInstruction();
+					CPU.executeInstruction();
 
-						long lPostCycleTime = System.nanoTime();
+					long lPostCycleTime = System.nanoTime();
 
-						long lCycleTime = (lPostCycleTime - lPreCycleTime) / 1000;
+					long lCycleTime = (lPostCycleTime - lPreCycleTime) / 1000;
 
-						TimeUnit.MICROSECONDS.sleep(CPU.getCurrentClockCycles() - lCycleTime);
+					TimeUnit.MICROSECONDS.sleep(CPU.getCurrentClockCycles() - lCycleTime);
 
-						//Thread.sleep(150);
-						
-						InOut.refreshDisplay();
-						
-					}
-					catch (InterruptedException e) 
-					{
-
-					}
+					//Thread.sleep(400);
 					
-					//HAS TO BE AN EVEN INTEGER IN EXPRESSION OTHERWISE THERE WILL BE AN INFINITE LOOP
+					InOut.refreshDisplay();
+
+				}
+				catch (InterruptedException e) 
+				{
+
+				}
+
 				//} while (CPU.getPC() != 0xFF0C);
-					
+
 				//			if (CPU.getClockCycles() < 29830)
 				//			{
-//								try 
+				//								try 
 				//				{
 				//
 				//
@@ -197,23 +196,23 @@ public class Apple1 {
 
 				//}
 
-//				try 
-//				{
-//					Thread.sleep(25);
-//
-//				} 
-//				catch (InterruptedException e) 
-//				{
-//					e.printStackTrace();
-//
-//				}
+				//				try 
+				//				{
+				//					Thread.sleep(25);
+				//
+				//				} 
+				//				catch (InterruptedException e) 
+				//				{
+				//					e.printStackTrace();
+				//
+				//				}
 
 			}
 
 		} while (bEmulatorRun == true);
 
 	};
-	
+
 	private void initaliseMemory()
 	{
 		Memory.bootstrapROMS(StorageROM.getROM() , (short) 0xFF00);
@@ -230,17 +229,16 @@ public class Apple1 {
 		//You can adjust this accordingly to your eyesight needs
 		final int iMonitorScale = 3;
 
-		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - InDev - as useful as an actual apple rn");
+		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - Alpha - as useful as an actual apple rn");
 
-	RAM MemoryRAM = new RAM(16);
-		//RAM MemoryRAM = new RAM();
-		
+		RAM MemoryRAM = new RAM(16);
+
 		ROM StorageROM = new ROM(8 , "ROM");
 		ACI CassetteInterface = new ACI(8 , "ACI" , Screen , MemoryRAM);
-		
+
 		CPU6502 CPU = new CPU6502(MemoryRAM);
 		PIA InOut = new PIA(CPU , MemoryRAM , Screen);
-		
+
 		Apple1 Apple1Emulator = new Apple1(Screen , MemoryRAM , CPU , InOut , StorageROM , CassetteInterface);
 
 	}

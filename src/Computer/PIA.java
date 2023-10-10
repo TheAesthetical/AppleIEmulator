@@ -47,7 +47,7 @@ public class PIA {
 		Memory = activeRAM;
 		Screen = activeScreen;
 
-		Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) Byte.toUnsignedInt((byte) (Memory.read(Short.toUnsignedInt(shKBD)) + 0b10000000)));
+		//Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) Byte.toUnsignedInt((byte) (Memory.read(Short.toUnsignedInt(shKBD)) + 0b10000000)));
 		
 	}
 
@@ -69,9 +69,12 @@ public class PIA {
 	
 	public void refreshDisplay() throws InterruptedException
 	{
-		//if((Memory.read(Short.toUnsignedInt(shDSP)) & 0b10000000) == 0b10000000)
-		if((Memory.read(Short.toUnsignedInt(shDSP)) & 0b10000000) == 0b10000000 && (Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b10000000)
-		{
+		if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true && Memory != null) 
+		{	
+		
+		//if((Memory.read(Short.toUnsignedInt(shDSP)) & 0b10000000) == 0b10000000 && (Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b10000000)
+			if((Memory.read(Short.toUnsignedInt(shDSP)) & 0b10000000) == 0b10000000)
+			{
 			 debug();
 			
 //				//Conversion for escape
@@ -79,12 +82,13 @@ public class PIA {
 //				///Conversion for carriage return
 //				if(shKBDCR == 0x88) shKBDCR = 0x0F;
 						
-			 if((Memory.read(Short.toUnsignedInt(shDSP)) & 0b01111111) == 0x0D)
+			 if(Memory.read(Short.toUnsignedInt(shDSP)) == 0x8D)
 			{
 				Screen.carriageReturn();
 				
 			}
-			else
+			//else if ((Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) != 0b10000000)
+			 else
 			{
 				Screen.drawNextCharacter((byte) (Memory.read(Short.toUnsignedInt(shDSP)) & 0b01111111));	
 				
@@ -92,18 +96,21 @@ public class PIA {
 			
 			TimeUnit.MILLISECONDS.sleep((long) 16.7);
 			
-			Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Memory.read(Short.toUnsignedInt(shDSP)) - 0b10000000));
-			//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (0b00000000));
+			if((Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b10000000)
+			{	
+			Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) 0b00000000);
+			
+			}
+			
+			//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Memory.read(Short.toUnsignedInt(shDSP)) + 0b10000000));
+			Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (0b00000000));
 			
 			//Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) Byte.toUnsignedInt((byte) ((byte) (Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) - 0b10000000)));
 			//Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) ((byte) (Memory.read(Short.toUnsignedInt(shKBD)) & 0b10000000) + 0b10000000));
 			
-			if((Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b10000000)
-			{
-			Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) 0b00000000);
-			
-			}
 
+		}
+		
 		}
 		
 	}
@@ -113,32 +120,38 @@ public class PIA {
 		Screen.getWindow().addKeyListener(new KeyListener() 
 		{
 			public void keyTyped(KeyEvent e) 
-			{
+			{				
 				if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true) 
-				{							
+				{		
+							
 					//Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) Byte.toUnsignedInt((byte) (Memory.read(Short.toUnsignedInt(shKBDCR)) + 0b10000000)));
-					Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) 0b10000000);
-	
 					
-//					if((Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b00000000)
-//					{
+					if((Memory.read(Short.toUnsignedInt(shKBDCR)) & 0b10000000) == 0b00000000 && Memory.read(Short.toUnsignedInt(shDSP)) == 0b00000000)
+					{
+						
+						Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) 0b100000000);
+					
+					Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) 0b10000000);
+					
 						//Memory.write((short) Short.toUnsignedInt(shKBDCR) , (byte) Byte.toUnsignedInt((byte) (Memory.read(Short.toUnsignedInt(shKBDCR)) + 0b10000000)));
 						
 						char chCharacterPressed = e.getKeyChar();
-						byte byASCIIValue = (byte) chCharacterPressed;
+						byte byASCIIValue = (byte) Character.toUpperCase(chCharacterPressed);
 										
 //						//Conversion for carriage return OG: 0x0D
 						if(byASCIIValue == 0x0A) byASCIIValue = (byte) 0x0D;
 						//Conversion for backspace OG: 0x0F
-						if(byASCIIValue == 0x08) byASCIIValue = (byte) 0x0F;
+						if(byASCIIValue == 0x08) byASCIIValue = (byte) 0b01011111;
+						//if(byASCIIValue == 0x08) byASCIIValue = (byte) 0xDF;
 						
 						System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + Byte.toUnsignedInt(byASCIIValue) + ")");
 						
-						Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) (byASCIIValue + 0b10000000));
+						Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) (Byte.toUnsignedInt(byASCIIValue) + 0b10000000));
+						//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Byte.toUnsignedInt(byASCIIValue)));
 						
 						debug();
 												
-				//	}
+					}
 					
 				}
 
