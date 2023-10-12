@@ -15,7 +15,7 @@ public class ROM {
 		
 		try (FileInputStream ByteStream = new FileInputStream(Utils.getDirectoryName() + szROMFileName + ".bin")) 
 		{	
-			ByteStream.read(ComputerROM, 0, ComputerROM.length);
+			ByteStream.read(ComputerROM , 0 , ComputerROM.length);
 
 		} 
 		catch (IOException e) 

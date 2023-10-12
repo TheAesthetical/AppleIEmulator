@@ -7,10 +7,8 @@ import Computer.CPU6502;
 import Computer.RAM;
 import Main.Utilities;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.journaldev.jackson.model.DebugTest;
+import com.journaldev.jackson.model.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -396,13 +394,13 @@ public class debugCPU
 		//debugCPU debug = new debugCPU(Utils.getDirectoryName() + "\\Normal\\");
 		
 		//SCHOOL - 302 - 700
-		debugCPU debug = new debugCPU("D:\\Personalemente\\NormalOpcodeTests\\");
+		//debugCPU debug = new debugCPU("D:\\Personalemente\\NormalOpcodeTests\\");
 		
 		//SCHOOL - 202
 		//debugCPU debug = new debugCPU("E:\\Personalemente\\NormalOpcodeTests\\");
 		
 		//HOME
-		//debugCPU debug = new debugCPU("G:\\Personalemente\\NormalOpcodeTests\\");
+		debugCPU debug = new debugCPU("G:\\Personalemente\\NormalOpcodeTests\\");
 		
 	}
 }

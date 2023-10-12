@@ -17,7 +17,6 @@ public class Apple1 {
 	private ROM StorageROM;
 	private ACI Storage;
 
-
 	private boolean bEmulatorPaused;
 	private boolean bEmulatorRun;
 
@@ -35,8 +34,6 @@ public class Apple1 {
 		InOut.resetPIA();
 
 		initaliseMemory();
-
-		//Screen.setCursorActive(true);
 
 		emulate();
 
@@ -156,6 +153,7 @@ public class Apple1 {
 					TimeUnit.MICROSECONDS.sleep(CPU.getCurrentClockCycles() - lCycleTime);
 
 					//Thread.sleep(400);
+					//Thread.sleep(200);
 					
 					InOut.refreshDisplay();
 
@@ -229,7 +227,7 @@ public class Apple1 {
 		//You can adjust this accordingly to your eyesight needs
 		final int iMonitorScale = 3;
 
-		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - Alpha - as useful as an actual apple rn");
+		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - Alpha");
 
 		RAM MemoryRAM = new RAM(16);
 

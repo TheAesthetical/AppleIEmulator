@@ -66,7 +66,7 @@ public class ACI extends ROM {
 				Screen.getLoadCassette().setVisible(true);
 				Screen.getClearCassette().setVisible(false);
 				
-				for (int i = shCassetteLocation; i <= IntegerBASIC.getROM().length; i++) 
+				for (int i = Short.toUnsignedInt(shCassetteLocation); i <= (Short.toUnsignedInt(shCassetteLocation) + CurrentCassette.getROM().length); i++) 
 				{
 					Memory.write((short) i, (byte) 0x00);
 					
@@ -90,21 +90,19 @@ public class ACI extends ROM {
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
+				CurrentCassette = IntegerBASIC;
 				shCassetteLocation = (short) 0xE000;
 				
-				System.out.println("p");
 				Screen.getLoadCassette().setVisible(false);
 				Screen.getClearCassette().setVisible(true);
-				System.out.println("p");
-				
+								
 				Memory.bootstrapROMS(IntegerBASIC.getROM() , shCassetteLocation);
-				System.out.println("s");
 				
-				for (int i = 0xE000; i <= 0xEFFF; i++) 
-				{
-					System.out.println(Integer.toHexString(i).toUpperCase() + " : " + Integer.toHexString(Memory.read(i)).toUpperCase());
-					
-				}
+//				for (int i = Short.toUnsignedInt(shCassetteLocation); i <= (Short.toUnsignedInt(shCassetteLocation) + CurrentCassette.getROM().length); i++) 
+//				{
+//					System.out.println(Integer.toHexString(i).toUpperCase() + " : " + Integer.toHexString(Memory.read(i)).toUpperCase());
+//					
+//				}
 				
 			}
 

@@ -412,13 +412,18 @@ public class CPU6502 {
 	private void interrupt()
 	{	
 		Memory.write((short) getSP(), (byte) (shProgramCounter >> 8));
-		byStackPointer--;
+		byStackPointer = (byte) (getSP() - 1);
 
 		Memory.write((short) getSP(), (byte) (shProgramCounter));
-		byStackPointer--;
+		byStackPointer = (byte) (getSP() - 1);
 
+		setStatusFlag('B' , true);
+		setStatusFlag('U' , true);
+		
 		Memory.write((short) getSP() , byStatusFlags);
-		byStackPointer--;
+		byStackPointer = (byte) (getSP() - 1);
+		
+		setStatusFlag('I' , true);
 
 		irqVector();
 
@@ -631,7 +636,7 @@ public class CPU6502 {
 
 		break;
 		//UNUSED
-		case('-'):
+		case('U'):
 			byStatusFlags = setBit(byStatusFlags , 5 , bBit);
 
 		break;
@@ -669,7 +674,7 @@ public class CPU6502 {
 			return getBit(byStatusFlags , 4);
 
 		//UNUSED
-		case('-'):
+		case('U'):
 			return getBit(byStatusFlags , 5);
 
 		case('O'):
@@ -684,8 +689,6 @@ public class CPU6502 {
 		}
 
 	}
-
-	//Arithmetic Status Flag checks that would be done by the ALU
 
 	private void checkZero(byte byRegister)
 	{
@@ -724,17 +727,17 @@ public class CPU6502 {
 		byHiByte = 0x00;
 		byLoByte = 0x00;
 
-				System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
+				//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
 
 		byInstruction = fetchNextInstruction();
 		incrementPC();
 
 				//System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
-				System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
+				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
 		shOperand = getOperandByAddressMode(byInstruction , shOperand);
 
-				System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
+				//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
 
 		executeOperation(byInstruction , shOperand);
 
@@ -835,7 +838,7 @@ public class CPU6502 {
 
 		short shPointer = (short) ((byHiByte << 8) | byLoByte);
 
-		shOperand = (short) (Byte.toUnsignedInt((byte) ((byte) Memory.read(Short.toUnsignedInt((short) (shPointer + 1))) * 256 + Byte.toUnsignedInt((byte) Memory.read(Short.toUnsignedInt(shPointer))))));
+		shOperand = (short) (Byte.toUnsignedInt((byte) (byte) Memory.read(Short.toUnsignedInt((short) (shPointer + 1)))) * 256 + Byte.toUnsignedInt((byte) Memory.read(Short.toUnsignedInt(shPointer))));
 
 		break;
 		case("XIN"):
@@ -914,7 +917,7 @@ public class CPU6502 {
 	{
 		byte byFetchedOperand = 0x00;
 
-		if ((OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("ACC")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IMM") || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("REL"))))
+		if ((OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("ACC")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IMM")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("REL")))
 		{
 			byFetchedOperand = (byte) shAddress;
 
@@ -942,34 +945,7 @@ public class CPU6502 {
 		case("ADC"):
 			byFetchedOperand = getOperand(byInstruction , shAddress); 
 
-		short shAdcTemp = (short) ((short) getA() + (byFetchedOperand & 0xFF) + (getStatusFlag('C') ? 1 : 0));
-
-		setStatusFlag('C' , shAdcTemp > 255);
-		setStatusFlag('Z' , (shAdcTemp & 0x00FF) == 0);
-		setStatusFlag('N' , (shAdcTemp & 0x80) == 0x80);
-		setStatusFlag('O' , (~((short) byAccumulator ^ (short) byFetchedOperand) & ((short) byAccumulator ^ (short) shAdcTemp) & 0x0080) == 0x0080);
-
-		byAccumulator = (byte) shAdcTemp;
-			
-//		    int m = getOperand(byInstruction , shAddress);
-//
-//	    if (getStatusFlag('D') == true) 
-//	    {
-//	      m = bcdToBinary((byte) getA()) + bcdToBinary((byte) m) + (getStatusFlag('C') ? 1 : 0);
-//	      setStatusFlag('C' , m > 99);
-//	      byAccumulator = (byte) binaryToBCD((byte) m);
-//	      checkZero((byte) getA());
-//	      checkNegative((byte) getA());
-//	      return;
-//	    }
-//	    int r = getA() + m + (getStatusFlag('C') ? 1 : 0);
-//
-//	    setStatusFlag('C' , r > 255);
-//	    r &= 255;
-//	      checkZero((byte) r);
-//	      checkNegative((byte) r);
-//	    setStatusFlag( 'O' , ((getA() & 0x80) == (m & 0x80)) && ((r & 0x80) != (getA() & 0x80)));
-//	    byAccumulator = (byte) r;
+		byAccumulator = add((byte) (byFetchedOperand));
 
 		break;
 		case("AND"):
@@ -1210,14 +1186,10 @@ public class CPU6502 {
 		case("JSR"):
 			shProgramCounter--;
 
-		//System.out.println(getSP() + " : " + shProgramCounter);
 		Memory.write((short) getSP() , (byte) ((shProgramCounter >> 8) & 0x00FF));
-		//System.out.println(Memory.read(getSP()));
 		byStackPointer--;
 
-		//System.out.println(getSP() + " : " + shProgramCounter);
 		Memory.write((short) getSP() , (byte) (shProgramCounter & 0x00FF));
-		//System.out.println(Memory.read(getSP()));
 		byStackPointer--;
 
 		shProgramCounter = shAddress;
@@ -1253,25 +1225,21 @@ public class CPU6502 {
 
 		break;
 		case("LSR"):
-			shShiftingOperand = (short) getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperand(byInstruction , shAddress);
 
-		shShiftingOperand = (short) (shShiftingOperand << 8);
-
-		shShiftingOperand = (short) (shShiftingOperand >> 1);
-
-		setStatusFlag('C' , ((shShiftingOperand & 0b0000000010000000) == 0b0000000010000000));
-		shShiftingOperand = (short) (shShiftingOperand >> 7);
-		checkZero((byte) shShiftingOperand);
-		setStatusFlag('N' , false);
+		setStatusFlag('C',(byFetchedOperand&0x0001)==0x0001);
+		short temp = (short)((0x00FF&byFetchedOperand) >> 1);
+		setStatusFlag('Z',(temp&0x00FF)==0x0000);
+		setStatusFlag('N',(temp&0x0080)==0x0080);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) shShiftingOperand;
+			byAccumulator = (byte) temp;
 
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) shShiftingOperand));
+			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Short.toUnsignedInt(temp));
 
 		}
 
@@ -1292,20 +1260,20 @@ public class CPU6502 {
 		case("PHA"):
 			Memory.write((short) getSP() , byAccumulator);
 
-		byStackPointer = (byte) (getSP() - 1);
-
+		byStackPointer--;
+		
 		break;
 		case("PHP"):
 			Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00110000));
 
 		setStatusFlag('B' , false);
-		setStatusFlag('-' , false);
+		setStatusFlag('U' , false);
 
-		byStackPointer = (byte) (getSP() - 1);
+		byStackPointer--;
 
 		break;
 		case("PLA"):
-			byStackPointer = (byte) (getSP() + 1);
+			byStackPointer++;
 
 		byAccumulator = (byte) Memory.read(getSP());
 
@@ -1314,11 +1282,11 @@ public class CPU6502 {
 
 		break;
 		case("PLP"):
-			byStackPointer = (byte) (getSP() + 1);
+			byStackPointer++;
 
 		byStatusFlags = (byte) Memory.read(getSP());
 
-		setStatusFlag('-' , true);
+		setStatusFlag('U' , true);
 
 		break;
 		case("ROL"):
@@ -1349,36 +1317,38 @@ public class CPU6502 {
 		case("ROR"):
 			byte byShiftingOperand = getOperand(byInstruction , shAddress);
 
-		short temp = (short)(((0x00FF&byShiftingOperand)>>1) | (short)(getStatusFlag('C') ? 0x0080 : 0));
+	 temp = (short)(((0x00FF&byShiftingOperand)>>1) | (short)(getStatusFlag('C') ? 0x0080 : 0));
 
-		setStatusFlag('C',(byShiftingOperand&0x01) == 0x01);
-		setStatusFlag('Z',(temp&0x00FF) == 0x0000);
-		setStatusFlag('N',(temp&0x0080) == 0x0080);
+		setStatusFlag('C',(byShiftingOperand & 0x01) == 0x01);
+		setStatusFlag('Z',(temp & 0x00FF) == 0x0000);
+		setStatusFlag('N',(temp & 0x0080) == 0x0080);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) byShiftingOperand;
+			byAccumulator = (byte) temp;
 
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) byShiftingOperand));
+			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) temp));
 
 		}
 
 		break;
 		case("RTI"):
+			byStackPointer++;
+			
 			byStatusFlags = (byte) Memory.read(getSP());
-		byStackPointer++;
+			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('B') ? 0b11101111 : 0));
+			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('-') ? 0b11011111 : 0));
 
+			byStackPointer++;
 		byLoByte = (byte) Memory.read(getSP());
+		
 		byStackPointer++;
-
 		byHiByte = (byte) Memory.read(getSP());
-		byStackPointer++;
 
-		shProgramCounter = (short) ((byHiByte * 256) + byLoByte);
-
+		shProgramCounter = (short) ((Byte.toUnsignedInt(byHiByte) * 256) + Byte.toUnsignedInt(byLoByte));
 
 		break;
 		case("RTS"):
@@ -1396,14 +1366,7 @@ public class CPU6502 {
 		case("SBC"):
 			byFetchedOperand = getOperand(byInstruction , shAddress);
 
-		short shSbcTemp = (short) ((short) getA() + ((short) byFetchedOperand ^ 0x00FF) + (short)(getStatusFlag('C') ? 1 : 0));
-
-		setStatusFlag('C' , shSbcTemp > 255);
-		setStatusFlag('Z' , (shSbcTemp & 0x00FF) == 0);
-		checkNegative((byte) shSbcTemp);
-		setStatusFlag('O' , (~((short) byAccumulator ^ (short) byFetchedOperand) & ((short) byAccumulator ^ (short) shSbcTemp) & 0x0080) == 0x0080);
-
-		byAccumulator = (byte) shSbcTemp;
+		byAccumulator = add((byte) (~byFetchedOperand));
 
 		break;
 		case("SEC"):
@@ -1482,6 +1445,29 @@ public class CPU6502 {
 
 		}
 
+	}
+	
+	private byte add(byte byFetchedByte) 
+	{
+		if(getStatusFlag('D') == true)
+		{
+			byFetchedByte = (byte) bcdToBinary(byFetchedByte);
+		}
+		
+		short shAdcTemp = (short) ((short) getA() + (byFetchedByte & 0xFF) + (getStatusFlag('C') ? 1 : 0));
+
+		setStatusFlag('C' , shAdcTemp > 255);
+		setStatusFlag('Z' , (shAdcTemp & 0x00FF) == 0);
+		setStatusFlag('N' , (shAdcTemp & 0x80) == 0x80);
+		setStatusFlag('O' , (~((short) byAccumulator ^ (short) byFetchedByte) & ((short) byAccumulator ^ (short) shAdcTemp) & 0x0080) == 0x0080);
+		
+		if(getStatusFlag('D') == true)
+		{
+			shAdcTemp = (short) binaryToBCD((byte) shAdcTemp);
+		}
+		
+		return (byte) shAdcTemp;
+		
 	}
 
 }
