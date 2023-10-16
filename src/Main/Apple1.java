@@ -1,14 +1,53 @@
 package Main;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import Computer.*;
 import Terminal.Monitor;
 
-public class Apple1 {
+public class Apple1 extends JPanel{
+	
+	private static final long serialVersionUID = 1L;
+	
+	//Calculated dimensions of the Apple 1 Terminal - they don't change hence final modifier
+	private final int iGridWidth = 240;
+	private final int iGridHeight = 192;
+	
+	private final int iCellSize;
+	
+	Utilities Utils = new Utilities();
+	
+	private JFrame Window;
+
+	private JMenuItem On;
+	private JMenuItem Off;
+	
+	private JMenuItem ResetButton;
+	private JMenuItem CLSButton;
+
+	private JMenu LoadCassette;
+	private JMenuItem IntegerBASIC;
+	private JMenuItem Other;
+	private JMenuItem SaveCassette;
+	private JMenuItem ClearCassette;
 
 	private Monitor Screen;
 	private RAM Memory;
@@ -22,15 +61,22 @@ public class Apple1 {
 
 	private Thread MainEmulatorThread;
 
-	public Apple1(Monitor tempScreen, RAM tempMemory, CPU6502 tempCPU, PIA tempInOut , ROM tempROM , ACI tempStorage)
+	public Apple1(int iMonitorScale) throws InterruptedException
 	{
-		Screen = tempScreen;
-		Memory = tempMemory;
-		CPU = tempCPU;
-		InOut = tempInOut;
-		StorageROM = tempROM;
-		Storage = tempStorage;
+		iCellSize = iMonitorScale;
+		
+		Screen = new Monitor(iGridWidth , iGridHeight);
+		
+		createGUI("Apple 1 Emulator");
 
+		Memory = new RAM(16);
+		StorageROM = new ROM(8 , "ROM");
+		
+		CPU = new CPU6502(Memory);
+		
+		Storage = new ACI(12 , "ACI" , Memory , CPU);
+		InOut = new PIA(CPU , Memory , Screen);
+		
 		InOut.resetPIA();
 
 		initaliseMemory();
@@ -41,12 +87,12 @@ public class Apple1 {
 
 	private void emulate()
 	{
-		Screen.getWindow().setVisible(true);
+		Window.setVisible(true);
 
-		Screen.getOn().setVisible(true);
-		Screen.getOff().setVisible(false);
+		On.setVisible(true);
+		Off.setVisible(false);
 
-		Screen.getOn().addActionListener(new ActionListener() 
+		On.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -65,35 +111,97 @@ public class Apple1 {
 					System.err.println("EMULATOR ALREADY RUNNING!");
 				}
 
-				Screen.getOn().setVisible(false);
-				Screen.getOff().setVisible(true);
+				On.setVisible(false);
+				Off.setVisible(true);
 
 			}
 
 		});
 
-		Screen.getOff().addActionListener(new ActionListener() 
+		Off.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{			
 				System.out.println("Power OFF pressed!");
 
 				bEmulatorRun = false;
-				Memory.resetMemory();
 
 				Screen.setIsResetted(true);
 				Screen.setCursorActive(false);
 
+				Memory.resetMemory();
 				Screen.resetMonitor();
 				InOut.resetPIA();
 				CPU.resetCPU();
+				Storage.resetACI();
 
-				Screen.getOn().setVisible(true);
-				Screen.getOff().setVisible(false);
+				On.setVisible(true);
+				Off.setVisible(false);
 
 			}
 
 		});
+		
+		Window.addKeyListener(new KeyListener() 
+		{
+			public void keyTyped(KeyEvent e) 
+			{				
+				if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true) 
+				{		
+					InOut.setKeyPressed(true);
+					InOut.setCharacterPressed(e.getKeyChar());
+
+				}
+
+			}
+			public void keyPressed(KeyEvent e) 
+			{
+
+			}
+			public void keyReleased(KeyEvent e) 
+			{
+
+			}
+
+		});
+		
+		ResetButton.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				System.out.println("RESET");
+
+				if(Screen != null && CPU != null)
+				{
+					Screen.setIsResetted(true);
+					Screen.resetMonitor();
+					Screen.setCursorActive(true);
+
+					CPU.resetCPU();
+					CPU.resetVector();
+
+					CPU.setisRunning(true);
+
+				}
+
+			}
+
+		});
+
+		CLSButton.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				if(Screen != null)
+				{
+					Screen.resetMonitor();
+
+				}
+
+			}
+
+		});
+
 
 	}
 
@@ -106,13 +214,14 @@ public class Apple1 {
 		//		{
 		if (bEmulatorPaused == false)
 		{
-			//			System.out.println("hicdasdasdasdasccc");
-			//			System.exit(0);
+//						System.out.println("hicdasdasdasdasccc");
+//						System.exit(0);
 
 			Screen.resetMonitor();
 			Screen.setIsResetted(false);
 
 			InOut.initalisePIA(CPU , Memory , Screen);
+			Storage.initaliseACI(Memory , CPU);
 
 			try 
 			{
@@ -163,53 +272,75 @@ public class Apple1 {
 
 				}
 
-				//} while (CPU.getPC() != 0xFF0C);
-
-				//			if (CPU.getClockCycles() < 29830)
-				//			{
-				//								try 
-				//				{
-				//
-				//
-				//				} 
-				//				catch (InterruptedException e) 
-				//				{
-				//					// TODO Auto-generated catch block
-				//					e.printStackTrace();
-				//
-				//				}
-				//	                }
-				//	                else
-				//	                {
-				//	                    CPU.setCpuCycles(0);
-				//	                    
-				//	                    bReadyToModifyState = true;
-				//	                    
-				//	                    while (System.nanoTime() - iStartTime < iFrame)
-				//	                    {
-				//	                    }
-				//	                    
-				//	                    iStartTime = System.nanoTime();
-				//	                }
-
-				//}
-
-				//				try 
-				//				{
-				//					Thread.sleep(25);
-				//
-				//				} 
-				//				catch (InterruptedException e) 
-				//				{
-				//					e.printStackTrace();
-				//
-				//				}
-
 			}
 
 		} while (bEmulatorRun == true);
 
 	};
+	
+	private void createGUI(String szWindowTitle) throws InterruptedException 
+	{
+		Window = new JFrame(szWindowTitle);
+
+		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
+		Window.setIconImage(WindowFavicon.getImage());
+
+		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Window.setResizable(false);
+
+		JMenuBar MenuBar = new JMenuBar();
+		MenuBar.setSize(iGridWidth * iCellSize , 10);
+
+		JMenu PowerSwitch = new JMenu("Power");
+		
+		On = new JMenuItem("On");
+		Off = new JMenuItem("Off");
+
+		PowerSwitch.add(On);
+		PowerSwitch.add(Off);
+
+		MenuBar.add(PowerSwitch);
+
+		JMenu Switches = new JMenu("Switches");
+
+		ResetButton = new JMenuItem("RESET");
+		CLSButton = new JMenuItem("CLS");
+
+		Switches.add(ResetButton);
+		Switches.add(CLSButton);
+
+		MenuBar.add(Switches);
+		
+		JMenu ACIInterface = new JMenu("ACI");
+		
+		LoadCassette = new JMenu("Load...");
+		IntegerBASIC = new JMenuItem("Integer BASIC");
+		Other = new JMenuItem("Other...");
+		
+		LoadCassette.add(IntegerBASIC);
+		LoadCassette.add(Other);
+		
+		ClearCassette = new JMenuItem("Clear");
+		
+		SaveCassette = new JMenuItem("Save");
+		
+		ACIInterface.add(LoadCassette);
+		ACIInterface.add(ClearCassette);
+		ACIInterface.add(SaveCassette);
+		
+		MenuBar.add(ACIInterface);
+
+		Window.add(MenuBar , BorderLayout.SOUTH);
+		
+		Screen.setGUI().setPreferredSize(new Dimension(iGridWidth * iCellSize , iGridHeight * iCellSize));
+        //CustomComponent customComponent = new CustomComponent(Screen.getPixelGrid());
+        Window.getContentPane().add(Screen.setGUI());
+     
+
+		Window.pack();
+		Window.setVisible(true);
+
+	}
 
 	private void initaliseMemory()
 	{
@@ -217,28 +348,5 @@ public class Apple1 {
 		Memory.bootstrapROMS(Storage.getROM() , (short) 0xC100);
 
 	}
-
-	public static void main(String[] args) throws InterruptedException
-	{		
-		Properties SmootherGUI = System.getProperties();
-		SmootherGUI.put("sun.java2d.d3d" , "false");
-		System.setProperties(SmootherGUI);
-
-		//You can adjust this accordingly to your eyesight needs
-		final int iMonitorScale = 3;
-
-		Monitor Screen = new Monitor(iMonitorScale , "Apple 1 Emulator - Alpha");
-
-		RAM MemoryRAM = new RAM(16);
-
-		ROM StorageROM = new ROM(8 , "ROM");
-		ACI CassetteInterface = new ACI(8 , "ACI" , Screen , MemoryRAM);
-
-		CPU6502 CPU = new CPU6502(MemoryRAM);
-		PIA InOut = new PIA(CPU , MemoryRAM , Screen);
-
-		Apple1 Apple1Emulator = new Apple1(Screen , MemoryRAM , CPU , InOut , StorageROM , CassetteInterface);
-
-	}
-
+	
 }

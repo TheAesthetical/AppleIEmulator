@@ -732,7 +732,6 @@ public class CPU6502 {
 		byInstruction = fetchNextInstruction();
 		incrementPC();
 
-				//System.out.print(Integer.toHexString(Byte.toUnsignedInt(Opcode)).toUpperCase() + " ");
 				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
 		shOperand = getOperandByAddressMode(byInstruction , shOperand);

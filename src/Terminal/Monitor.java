@@ -8,15 +8,16 @@ import java.awt.*;
 
 import Main.Utilities;
 
+//Impliment characterset
 public class Monitor extends JPanel implements Runnable{
 
 	private static final long serialVersionUID = 8168022962633428025L;
 
 	private Utilities Utils = new Utilities();
 
-	//Calculated dimensions of the Apple 1 Terminal - they don't change hence final modifier
-	private final int iGridWidth = 240;
-	private final int iGridHeight = 192;
+//	//Calculated dimensions of the Apple 1 Terminal - they don't change hence final modifier
+	private final int iGridWidth;
+	private final int iGridHeight;
 
 	private final CharacterGenerator CharacterSet = new CharacterGenerator();
 	private final int iCharHeight = CharacterSet.getCharacterROM()[0].length;
@@ -26,8 +27,8 @@ public class Monitor extends JPanel implements Runnable{
 	private final byte bySpaceIndex = 32;
 	private final int iCursorSleepTimeMS = 333;
 
-	private final int iTotalCharsOnLine = iGridWidth / (iCharWidth + 1);
-	private final int iTotalLinesOnScreen = (iGridHeight / iCharHeight) + 1;
+	private final int iTotalCharsOnLine;
+	private final int iTotalLinesOnScreen;
 
 	private int iCellSize;
 
@@ -41,73 +42,80 @@ public class Monitor extends JPanel implements Runnable{
 
 	private boolean bIsResetted = false;
 
-	private boolean[][] bPixelGrid = new boolean[iGridHeight][iGridWidth];
+	private boolean[][] bPixelGrid;
 
-	private JFrame Window;
+//	private JFrame Window;
+//
+//	private JMenuItem On;
+//	private JMenuItem Off;
+//	
+//	private JMenuItem ResetButton;
+//	private JMenuItem CLSButton;
+//
+//	private JMenu LoadCassette;
+//	private JMenuItem IntegerBASIC;
+//	private JMenuItem Other;
+//	private JMenuItem SaveCassette;
+//	private JMenuItem ClearCassette;
 
-	private JMenuItem On;
-	private JMenuItem Off;
-	
-	private JMenuItem ResetButton;
-	private JMenuItem CLSButton;
+//	public JFrame getWindow() 
+//	{
+//		return Window;
+//
+//	}
+//
+//	public JMenuItem getOn() 
+//	{
+//		return On;
+//
+//	}
+//
+//	public JMenuItem getOff() 
+//	{
+//		return Off;
+//
+//	}
+//
+//	public JMenuItem getResetButton() 
+//	{
+//		return ResetButton;
+//
+//	}
+//
+//	public JMenuItem getCLSButton() 
+//	{
+//		return CLSButton;
+//
+//	}
+//	
+//	public JMenu getLoadCassette() 
+//	{
+//		return LoadCassette;
+//
+//	}
+//	
+//	public JMenuItem getIntegerBASIC() 
+//	{
+//		return IntegerBASIC;
+//
+//	}
+//
+//	public JMenuItem getOther() 
+//	{
+//		return Other;
+//
+//	}
+//
+//	public JMenuItem getClearCassette() 
+//	{
+//		return ClearCassette;
+//
+//	}
 
-	private JMenu LoadCassette;
-	private JMenuItem IntegerBASIC;
-	private JMenuItem Other;
-	private JMenuItem ClearCassette;
-
-	public JFrame getWindow() 
+	public boolean[][] getPixelGrid() 
 	{
-		return Window;
-
-	}
-
-	public JMenuItem getOn() 
-	{
-		return On;
-
-	}
-
-	public JMenuItem getOff() 
-	{
-		return Off;
-
-	}
-
-	public JMenuItem getResetButton() 
-	{
-		return ResetButton;
-
-	}
-
-	public JMenuItem getCLSButton() 
-	{
-		return CLSButton;
-
-	}
-	
-	public JMenu getLoadCassette() 
-	{
-		return LoadCassette;
-
-	}
-	
-	public JMenuItem getIntegerBASIC() 
-	{
-		return IntegerBASIC;
-
-	}
-
-	public JMenuItem getOther() 
-	{
-		return Other;
-
-	}
-
-	public JMenuItem getClearCassette() 
-	{
-		return ClearCassette;
-
+		return bPixelGrid;
+		
 	}
 
 	public boolean getCursorActive() 
@@ -140,90 +148,93 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public Monitor(int iReqCellSize , String szWindowTitle) throws InterruptedException 
-	{
+	public Monitor(int iReqWidth , int iReqHeight) throws InterruptedException 
+	{	
 		resetMonitor();
 		
-		if(iReqCellSize > 4)
-		{
-			iReqCellSize = 4;
-			
-		}
-		else if(iReqCellSize <= 0)
-		{
-			iReqCellSize = 1;
-			
-		}
+		iGridWidth = iReqWidth;
+		iGridHeight = iReqHeight;
+		
+		bPixelGrid = new boolean[iGridHeight][iGridWidth];
+		
+		iTotalCharsOnLine = iGridWidth / (iCharWidth + 1);
+		iTotalLinesOnScreen = (iGridHeight / iCharHeight) + 1;
 
-		iCellSize = iReqCellSize;
-
-		createGUI(szWindowTitle);
 		bCursorActive = false;
 
 		CursorThread = new Thread (this , "Cursor Thread");
 		CursorThread.start();
 
 	}
-
-	private void createGUI(String szWindowTitle) 
-	{
-		Window = new JFrame(szWindowTitle);
-
-		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
-		Window.setIconImage(WindowFavicon.getImage());
-
-		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Window.setResizable(false);
-
-		JMenuBar MenuBar = new JMenuBar();
-		MenuBar.setSize(iGridWidth * iCellSize , 10);
-
-		JMenu PowerSwitch = new JMenu("Power");
+	
+	public Monitor setGUI()
+	{	
+		return this;
 		
-		On = new JMenuItem("On");
-		Off = new JMenuItem("Off");
-
-		PowerSwitch.add(On);
-		PowerSwitch.add(Off);
-
-		MenuBar.add(PowerSwitch);
-
-		JMenu Switches = new JMenu("Switches");
-
-		ResetButton = new JMenuItem("RESET");
-		CLSButton = new JMenuItem("CLS");
-
-		Switches.add(ResetButton);
-		Switches.add(CLSButton);
-
-		MenuBar.add(Switches);
-		
-		JMenu ACIInterface = new JMenu("ACI");
-		
-		LoadCassette = new JMenu("Load");
-		IntegerBASIC = new JMenuItem("Integer BASIC");
-		Other = new JMenuItem("Other...");
-		
-		LoadCassette.add(IntegerBASIC);
-		LoadCassette.add(Other);
-		
-		ClearCassette = new JMenuItem("Clear");
-		
-		ACIInterface.add(LoadCassette);
-		ACIInterface.add(ClearCassette);
-		
-		MenuBar.add(ACIInterface);
-
-		Window.add(MenuBar , BorderLayout.SOUTH);
-
-		this.setPreferredSize(new Dimension(iGridWidth * iCellSize , iGridHeight * iCellSize));
-		Window.getContentPane().add(this);
-		//Screen.add(this);
-
-		Window.pack();
-		Window.setVisible(false);
-
 	}
+
+//	private void createGUI(String szWindowTitle) 
+//	{
+//		Window = new JFrame(szWindowTitle);
+//
+//		ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
+//		Window.setIconImage(WindowFavicon.getImage());
+//
+//		Window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		Window.setResizable(false);
+//
+//		JMenuBar MenuBar = new JMenuBar();
+//		MenuBar.setSize(iGridWidth * iCellSize , 10);
+//
+//		JMenu PowerSwitch = new JMenu("Power");
+//		
+//		On = new JMenuItem("On");
+//		Off = new JMenuItem("Off");
+//
+//		PowerSwitch.add(On);
+//		PowerSwitch.add(Off);
+//
+//		MenuBar.add(PowerSwitch);
+//
+//		JMenu Switches = new JMenu("Switches");
+//
+//		ResetButton = new JMenuItem("RESET");
+//		CLSButton = new JMenuItem("CLS");
+//
+//		Switches.add(ResetButton);
+//		Switches.add(CLSButton);
+//
+//		MenuBar.add(Switches);
+//		
+//		JMenu ACIInterface = new JMenu("ACI");
+//		
+//		LoadCassette = new JMenu("Load...");
+//		IntegerBASIC = new JMenuItem("Integer BASIC");
+//		Other = new JMenuItem("Other...");
+//		
+//		LoadCassette.add(IntegerBASIC);
+//		LoadCassette.add(Other);
+//		
+//		ClearCassette = new JMenuItem("Clear");
+//		
+//		SaveCassette = new JMenuItem("Save");
+//		
+//		ACIInterface.add(LoadCassette);
+//		ACIInterface.add(ClearCassette);
+//		ACIInterface.add(SaveCassette);
+//		
+//		MenuBar.add(ACIInterface);
+//
+//		Window.add(MenuBar , BorderLayout.SOUTH);
+//
+//		this.setPreferredSize(new Dimension(iGridWidth * iCellSize , iGridHeight * iCellSize));
+//		Window.getContentPane().add(this);
+//		//Screen.add(this);
+//
+//		Window.pack();
+//		Window.setVisible(false);
+//
+//	}
 
 	//	trying to achieve the weird uninitialised look about it
 	public void powerOnMonitor() throws InterruptedException
