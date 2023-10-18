@@ -9,11 +9,11 @@ public class ROM {
 	private Utilities Utils = new Utilities();
 	private byte[] ComputerROM;
 
-	public ROM(int iSizePower , String szROMFileName) {
+	public ROM(int iByteSize , String szROMFileName) {
 
-		ComputerROM = new byte[((int) Math.pow(2 , iSizePower))];
+		ComputerROM = new byte[iByteSize];
 		
-		try (FileInputStream ByteStream = new FileInputStream(Utils.getDirectoryName() + szROMFileName + ".bin")) 
+		try (FileInputStream ByteStream = new FileInputStream(Utils.getDirectoryName() + szROMFileName)) 
 		{	
 			ByteStream.read(ComputerROM , 0 , ComputerROM.length);
 

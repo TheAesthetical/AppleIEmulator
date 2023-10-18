@@ -4,9 +4,9 @@ public class RAM {
 	
 	private byte[] ComputerRAM;
 
-	public RAM(int iSizePower) 
+	public RAM(int iByteSize) 
 	{
-		ComputerRAM = new byte[((int) Math.pow(2 , iSizePower))];
+		ComputerRAM = new byte[iByteSize];
 		
 	}
 	

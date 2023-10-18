@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import Computer.ACI;
 import Computer.CPU6502;
-import Computer.PIA;
+import Computer.PIA6522;
 import Computer.RAM;
 import Computer.ROM;
 import Terminal.Monitor;
