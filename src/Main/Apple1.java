@@ -39,13 +39,13 @@ public class Apple1 extends JPanel{
 
 	private static final long serialVersionUID = 1L;
 
-	//Calculated dimensions of the Apple 1 Terminal - they don't change hence final modifier
+	//Calculated dimensions of the Apple 1 Terminal
 	private final int iGridWidth = 240;
 	private final int iGridHeight = 192;
 
-	Utilities Utils = new Utilities();
+	private Utilities Utils = new Utilities();
 
-	ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
+	private ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
 
 	private JMenuItem On;
 	private JMenuItem Off;
@@ -59,9 +59,9 @@ public class Apple1 extends JPanel{
 	private JMenuItem SaveCassette;
 	private JMenuItem ClearCassette;
 
-	File SaveFile;
-	JFileChooser FileUI;
-	FileNameExtensionFilter BinaryFileFilter;
+	private File SaveFile;
+	private JFileChooser FileUI;
+	private FileNameExtensionFilter BinaryFileFilter;
 
 	private JFrame SaveFrame;
 	private JTextField StartAddress;
@@ -69,9 +69,9 @@ public class Apple1 extends JPanel{
 	private JTextField RunAddress;
 	private JButton saveButton;
 
-	JLabel StartLocation;
-	JLabel EndLocation;
-	JLabel RunLocation;
+	private JLabel StartLocation;
+	private JLabel EndLocation;
+	private JLabel RunLocation;
 
 
 	private Monitor Screen;
@@ -91,7 +91,7 @@ public class Apple1 extends JPanel{
 		Screen = new Monitor(iGridWidth , iGridHeight , iMonitorScale);
 		Screen.setCursorIndex((byte) 64);
 		Screen.setCursorSleepTimeMS(333);
-		
+
 		createGUI("Apple 1 Emulator");
 
 		Memory = new RAM(65536);
@@ -114,7 +114,7 @@ public class Apple1 extends JPanel{
 
 		On.setVisible(true);
 		Off.setVisible(false);
-		
+
 		LoadCassette.setVisible(true);
 		ClearCassette.setVisible(false);
 
@@ -155,7 +155,7 @@ public class Apple1 extends JPanel{
 				Screen.setIsResetted(true);
 				Screen.setCursorActive(false);
 				Screen.resetMonitor();
-				
+
 				Memory.resetMemory();
 				CPU.resetCPU();
 
@@ -193,10 +193,10 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				System.out.println("RESET");
-
 				if(bEmulatorPaused == false && bEmulatorRun == true)
 				{
+					System.out.println("RESET");
+					
 					Screen.setIsResetted(true);
 					Screen.resetMonitor();
 					Screen.setCursorActive(true);
@@ -218,6 +218,8 @@ public class Apple1 extends JPanel{
 			{
 				if(bEmulatorPaused == false && bEmulatorRun == true)				
 				{
+					System.out.println("CLEAR SCREEN");
+					
 					Screen.resetMonitor();
 
 				}
@@ -267,7 +269,7 @@ public class Apple1 extends JPanel{
 					ClearCassette.setVisible(true);
 
 					Storage.loadCassette(1 , (short) 0xE000);
-					
+
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Integer BASIC bootstrapped to RAM at E000");
 
 				}
@@ -281,23 +283,37 @@ public class Apple1 extends JPanel{
 			{ 
 				if(bEmulatorPaused == false && bEmulatorRun == true)				
 				{
-					LoadCassette.setVisible(false);
-					ClearCassette.setVisible(true);
-					
 					FileUI = new JFileChooser();
+
 					FileUI.setAcceptAllFileFilterUsed(false);
 					BinaryFileFilter = new FileNameExtensionFilter("BIN" , "bin");
 					FileUI.addChoosableFileFilter(BinaryFileFilter);
+
 					FileUI.showOpenDialog(Screen.getParent());
 
 					if (FileUI.getSelectedFile() != null)
 					{
-						short shBootstrapLocation = (short) Integer.parseInt(FileUI.getSelectedFile().getName().substring(0, 4) , 16);
+						String szInvalidBootstrapLocation = FileUI.getSelectedFile().getName().substring(0, 4);
 
-						Storage.loadFile(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
+						if(Validator("^[0-9a-fA-F]{4}$" , szInvalidBootstrapLocation) == true)
+						{
 
-						JOptionPane.showMessageDialog(Screen.getScreen() , "ROM bootstrapped to memory at address " + Integer.toHexString(Short.toUnsignedInt(shBootstrapLocation)));
-						
+							short shBootstrapLocation = (short) Integer.parseInt(szInvalidBootstrapLocation , 16);
+
+							Storage.loadFile(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
+
+							LoadCassette.setVisible(false);
+							ClearCassette.setVisible(true);
+
+							JOptionPane.showMessageDialog(Screen.getScreen() , FileUI.getSelectedFile().getName() + " bootstrapped to memory at address " + FileUI.getSelectedFile().getName().substring(0, 4));
+
+						}
+						else
+						{
+							JOptionPane.showMessageDialog(Screen.getScreen() , "Error in bootstrapping file!\nThe file name needs to start with the memory address to bootstrap to as a 4 character hexadecimal address");
+
+						}
+
 					}
 
 				}
@@ -310,7 +326,7 @@ public class Apple1 extends JPanel{
 	private void saveToStorage()
 	{
 		SaveGUI();
-		
+
 		saveButton.addActionListener( new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
@@ -341,11 +357,11 @@ public class Apple1 extends JPanel{
 								try (FileOutputStream ByteStream = new FileOutputStream(FileUI.getSelectedFile())) 
 								{	
 									ByteStream.write(Storage.getMemoryStream(shStartAddressValid , shEndAddressValid));
-									
+
 									SaveFile = new File(szBootLocation + FileUI.getSelectedFile().getName());
 									FileUI.getSelectedFile().renameTo(SaveFile);
-									
-									JOptionPane.showMessageDialog(SaveFrame, "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
+
+									JOptionPane.showMessageDialog(SaveFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
 
 								} 
 								catch (IOException e1) 
@@ -358,15 +374,15 @@ public class Apple1 extends JPanel{
 							}
 							else
 							{
-								JOptionPane.showMessageDialog(SaveFrame, "Error!\nAddresses not saved successfully");
+								JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
 								SaveFrame.setVisible(false);
-								
+
 							}
 
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(SaveFrame, "Error!\nAddresses not saved successfully");
+							JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
 							SaveFrame.setVisible(false);
 
 						}
@@ -374,10 +390,11 @@ public class Apple1 extends JPanel{
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(SaveFrame, "Error!\nAddresses not saved successfully");
+						JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
 						SaveFrame.setVisible(false);
 
 					}
+					
 				}
 
 			}
@@ -452,7 +469,7 @@ public class Apple1 extends JPanel{
 					//Thread.sleep(400);
 					//Thread.sleep(200);
 
-					PIA.refreshDisplay();
+					PIA.refresh();
 
 				}
 				catch (InterruptedException e) 
@@ -518,7 +535,7 @@ public class Apple1 extends JPanel{
 		MenuBar.add(ACIInterface);
 
 		Screen.getScreen().add(MenuBar , BorderLayout.SOUTH);
-
+		
 		Screen.getScreen().pack();
 		Screen.getScreen().setVisible(false);
 

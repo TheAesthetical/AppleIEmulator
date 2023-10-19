@@ -48,9 +48,10 @@ public class PIA6522 {
 
 	}
 
-	public void refreshDisplay() throws InterruptedException
+	public void refresh() throws InterruptedException
 	{
-		if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true && Memory != null) 
+		//if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true && Memory != null) 
+		if(Screen.getIsResetted() == true && CPU.getisRunning() == true) 
 		{	
 			keyboard();
 			display();
@@ -76,7 +77,7 @@ public class PIA6522 {
 			if(byASCIIValue == 0x08 || byASCIIValue == 0x7F) byASCIIValue = (byte) 0b01011111;
 			//if(byASCIIValue == 0x08) byASCIIValue = (byte) 0xDF;
 
-			System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + Byte.toUnsignedInt(byASCIIValue) + ")");
+			//System.out.println("Key Typed: '" + chCharacterPressed + "' (ASCII value: " + Byte.toUnsignedInt(byASCIIValue) + ")");
 
 			Memory.write((short) Short.toUnsignedInt(shKBD) , (byte) (Byte.toUnsignedInt((byte) (byASCIIValue)) + 0b10000000));
 			//Memory.write((short) Short.toUnsignedInt(shDSP) , (byte) (Byte.toUnsignedInt(byASCIIValue)));

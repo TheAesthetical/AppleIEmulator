@@ -104,6 +104,7 @@ public class CPU6502 {
 		}
 
 		//Opcodes ordered alphabetically from A-Z:
+		
 		//OpcodeMatrix[0x-LoNibble-HiNibble] = new Opcode("Operation" , "AddressingMode" , DefaultNumberOfCycles);
 
 		//ADC
@@ -1185,10 +1186,10 @@ public class CPU6502 {
 		case("JSR"):
 			shProgramCounter--;
 
-		Memory.write((short) getSP() , (byte) ((shProgramCounter >> 8) & 0x00FF));
+		Memory.write((short) ((short) 0x0100+Byte.toUnsignedInt(byStackPointer)) , (byte) ((shProgramCounter >> 8) & 0x00FF));
 		byStackPointer--;
 
-		Memory.write((short) getSP() , (byte) (shProgramCounter & 0x00FF));
+		Memory.write((short) ((short) 0x0100+Byte.toUnsignedInt(byStackPointer)) , (byte) (shProgramCounter & 0x00FF));
 		byStackPointer--;
 
 		shProgramCounter = shAddress;
@@ -1226,10 +1227,10 @@ public class CPU6502 {
 		case("LSR"):
 			byFetchedOperand = getOperand(byInstruction , shAddress);
 
-		setStatusFlag('C',(byFetchedOperand&0x0001)==0x0001);
-		short temp = (short)((0x00FF&byFetchedOperand) >> 1);
-		setStatusFlag('Z',(temp&0x00FF)==0x0000);
-		setStatusFlag('N',(temp&0x0080)==0x0080);
+		setStatusFlag('C',(byFetchedOperand & 0x0001) == 0x0001);
+		short temp = (short)((0x00FF & byFetchedOperand) >> 1);
+		setStatusFlag('Z',(temp & 0x00FF)==0x0000);
+		setStatusFlag('N',(temp & 0x0080)==0x0080);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
@@ -1264,11 +1265,12 @@ public class CPU6502 {
 		break;
 		case("PHP"):
 			Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00110000));
-
-		setStatusFlag('B' , false);
-		setStatusFlag('U' , false);
+			//Memory.write((short) getSP() , byStatusFlags);
 
 		byStackPointer--;
+		
+		setStatusFlag('B' , false);
+		setStatusFlag('U' , false);
 
 		break;
 		case("PLA"):

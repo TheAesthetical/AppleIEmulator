@@ -37,7 +37,7 @@ public class debugCPU
 	public debugCPU(String szFilePath)
 	{
 		this.szPath = szFilePath;
-		this.Memory = new RAM(16);
+		this.Memory = new RAM(65536);
 		this.CPU = new CPU6502(this.Memory);
 		
 		Scanner szKeyboard = new Scanner(System.in);
