@@ -1,12 +1,7 @@
 package Terminal;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-
 import java.awt.*;
-
-import Main.Utilities;
 
 public class Monitor extends JPanel implements Runnable{
 
@@ -36,7 +31,7 @@ public class Monitor extends JPanel implements Runnable{
 	private int iCharsOnLine = 0;
 	private int iLinesOnScreen = 1;
 
-	private boolean bIsResetted = false;
+	private boolean bIsCleared = false;
 
 	private JFrame Screen = new JFrame();
 	
@@ -60,9 +55,9 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public boolean getIsResetted() 
+	public boolean getCleared() 
 	{
-		return bIsResetted;
+		return bIsCleared;
 
 	}
 
@@ -78,9 +73,9 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 	
-	public void setIsResetted(boolean bIsResetted) 
+	public void setCleared(boolean bIsCleared) 
 	{
-		this.bIsResetted = bIsResetted;
+		this.bIsCleared = bIsCleared;
 
 	}
 	
@@ -164,7 +159,7 @@ public class Monitor extends JPanel implements Runnable{
 			
 			resetMonitor();
 
-		} while(bIsResetted == false);
+		} while(bIsCleared == false);
 
 	}
 

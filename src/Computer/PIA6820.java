@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import Terminal.Monitor;
 
-public class PIA6522 {
+public class PIA6820 {
 
 	private CPU6502 CPU;
 	private RAM Memory;
@@ -31,7 +31,7 @@ public class PIA6522 {
 		
 	}
 
-	public PIA6522(CPU6502 activeCPU , RAM activeRAM , Monitor activeScreen) throws InterruptedException 
+	public PIA6820(CPU6502 activeCPU , RAM activeRAM , Monitor activeScreen) throws InterruptedException 
 	{
 		CPU = activeCPU;
 		Memory = activeRAM;
@@ -51,7 +51,8 @@ public class PIA6522 {
 	public void refresh() throws InterruptedException
 	{
 		//if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true && Memory != null) 
-		if(Screen.getIsResetted() == true && CPU.getisRunning() == true) 
+		//if(Screen.getCleared() == true && CPU.getisRunning() == true) 
+		if(CPU.getisRunning() == true) 
 		{	
 			keyboard();
 			display();

@@ -375,6 +375,7 @@ public class CPU6502 {
 	public void resetCPU()
 	{
 		byAccumulator = 0x00;
+		shProgramCounter = 0x0000;
 
 		byStackPointer = (byte) 0xFD;
 
@@ -728,16 +729,16 @@ public class CPU6502 {
 		byHiByte = 0x00;
 		byLoByte = 0x00;
 
-				//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
+				System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
 
 		byInstruction = fetchNextInstruction();
 		incrementPC();
 
-				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
+				System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
 		shOperand = getOperandByAddressMode(byInstruction , shOperand);
 
-				//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
+				System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
 
 		executeOperation(byInstruction , shOperand);
 

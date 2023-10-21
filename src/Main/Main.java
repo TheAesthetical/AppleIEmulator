@@ -2,15 +2,9 @@ package Main;
 
 import java.util.Properties;
 
-import Computer.ACI;
-import Computer.CPU6502;
-import Computer.PIA6522;
-import Computer.RAM;
-import Computer.ROM;
-import Terminal.Monitor;
-
 public class Main {
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws InterruptedException
 	{		
 		Properties SmootherGUI = System.getProperties();

@@ -20,4 +20,23 @@ public class Utilities {
 		
 	}
 	
+	public boolean Validate(String szRegexEq , String szCheckValue) 
+	{
+		boolean bValid;
+
+		if(szCheckValue.matches(szRegexEq))
+		{
+			bValid = true;
+
+		}
+		else
+		{
+			bValid = false;
+
+		}
+
+		return bValid;
+
+	}
+	
 }
