@@ -461,7 +461,7 @@ public class CPU6502 {
 
 	private short getVector(short byLoByteLocation , short byHiByteLocation)
 	{
-		return (short) ((Memory.read(Short.toUnsignedInt(byLoByteLocation)) + 256 * (Memory.read(Short.toUnsignedInt(byHiByteLocation)))));
+		return (short) ((Memory.read(byLoByteLocation) + 256 * (Memory.read(byHiByteLocation))));
 
 	}
 
@@ -517,7 +517,7 @@ public class CPU6502 {
 
 	}
 
-	public boolean getisRunning() 
+	public boolean getRunning() 
 	{
 		return bRunning;
 
@@ -527,7 +527,7 @@ public class CPU6502 {
 	//Setters
 	//===================================================================
 
-	public void setisRunning(boolean bRunning) 
+	public void setRunning(boolean bRunning) 
 	{
 		this.bRunning = bRunning;
 
@@ -754,7 +754,7 @@ public class CPU6502 {
 
 	private byte fetchNextInstruction()
 	{
-		return (byte) Memory.read(getPC());
+		return (byte) Memory.read(shProgramCounter);
 
 	}
 
@@ -786,20 +786,20 @@ public class CPU6502 {
 
 		break;
 		case("ABS"):
-			byLoByte = (byte) Memory.read(getPC());
+			byLoByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
-		byHiByte = (byte) Memory.read(getPC());
+		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		shOperand = (short) (getLO() + 256 * getHI());
 
 		break;
 		case("ABX"):
-			byLoByte = (byte) Memory.read(getPC());
+			byLoByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
-		byHiByte = (byte) Memory.read(getPC());
+		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		shOperand = (short) (getLO() + 256 * getHI() + getX());
@@ -808,10 +808,10 @@ public class CPU6502 {
 
 		break;
 		case("ABY"):
-			byLoByte = (byte) Memory.read(getPC());
+			byLoByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
-		byHiByte = (byte) Memory.read(getPC());
+		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		shOperand = (short) (getLO() + 256 * getHI() + getY());
@@ -820,7 +820,7 @@ public class CPU6502 {
 
 		break;
 		case("IMM"):
-			byLoByte = (byte) Memory.read(getPC());
+			byLoByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		shOperand = (short) getLO();
@@ -831,19 +831,19 @@ public class CPU6502 {
 
 			break;
 		case("IND"):
-			byLoByte = (byte) Memory.read(getPC());
+			byLoByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
-		byHiByte = (byte) Memory.read(getPC());
+		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		short shPointer = (short) ((byHiByte << 8) | byLoByte);
 
-		shOperand = (short) (Byte.toUnsignedInt((byte) (byte) Memory.read(Short.toUnsignedInt((short) (shPointer + 1)))) * 256 + Byte.toUnsignedInt((byte) Memory.read(Short.toUnsignedInt(shPointer))));
+		shOperand = (short) (Byte.toUnsignedInt((byte) (byte) Memory.read((short) (shPointer + 1))) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)));
 
 		break;
 		case("XIN"):
-			byte byOffset = (byte) Memory.read(getPC());
+			byte byOffset = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		byLoByte = (byte) Memory.read((short) ((byOffset + getX()) & 0x00FF));
@@ -853,7 +853,7 @@ public class CPU6502 {
 
 		break;
 		case("INY"):
-			byOffset = (byte) Memory.read(getPC());
+			byOffset = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		byLoByte = (byte) Memory.read((short) (byOffset & 0x00FF));
@@ -865,7 +865,7 @@ public class CPU6502 {
 
 		break;
 		case("REL"):
-			shOperand = (short) Memory.read(getPC());
+			shOperand = (short) Memory.read(shProgramCounter);
 		incrementPC();
 
 		//Operand = (short) (byLoByte + getPC());
@@ -878,14 +878,14 @@ public class CPU6502 {
 
 		break;
 		case("ZPG"):
-			shOperand = (short) Memory.read(getPC());
+			shOperand = (short) Memory.read(shProgramCounter);
 		incrementPC();
 
 		shOperand = (short) (shOperand & 0x00FF);
 
 		break;
 		case("ZPX"):
-			shOperand = (short) (Memory.read(getPC()));
+			shOperand = (short) (Memory.read(shProgramCounter));
 		incrementPC();
 
 		shOperand = (short) (Short.toUnsignedInt(shOperand) + getX());
@@ -894,7 +894,7 @@ public class CPU6502 {
 
 		break;
 		case("ZPY"):
-			shOperand = (short) (Memory.read(getPC()));
+			shOperand = (short) (Memory.read(shProgramCounter));
 		incrementPC();
 
 		shOperand = (short) (Short.toUnsignedInt(shOperand) + getY());
@@ -925,7 +925,7 @@ public class CPU6502 {
 		}
 		else if(!(OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IMP")))
 		{
-			byFetchedOperand = (byte) Memory.read(Short.toUnsignedInt(shAddress));
+			byFetchedOperand = (byte) Memory.read(shAddress);
 
 		}
 
@@ -976,7 +976,7 @@ public class CPU6502 {
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) shShiftingOperand));
+			Memory.write(shAddress , (byte) shShiftingOperand);
 
 		}
 
@@ -1128,10 +1128,10 @@ public class CPU6502 {
 		case("DEC"):
 			byFetchedOperand = getOperand(byInstruction , shAddress);	
 
-		Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) (byFetchedOperand - 1)));
+		Memory.write(shAddress , (byte) (byFetchedOperand - 1));
 
-		checkZero((byte) Memory.read(Short.toUnsignedInt(shAddress)));
-		checkNegative((byte) Memory.read(Short.toUnsignedInt(shAddress)));
+		checkZero((byte) Memory.read(shAddress));
+		checkNegative((byte) Memory.read(shAddress));
 
 		break;
 		case("DEX"):
@@ -1160,10 +1160,10 @@ public class CPU6502 {
 		case("INC"):
 			byFetchedOperand = getOperand(byInstruction , shAddress);	
 
-		Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) (byFetchedOperand + 1)));
+		Memory.write(shAddress , (byte) (byFetchedOperand + 1));
 
-		checkZero((byte) Memory.read(Short.toUnsignedInt(shAddress)));
-		checkNegative((byte) Memory.read(Short.toUnsignedInt(shAddress)));
+		checkZero((byte) Memory.read(shAddress));
+		checkNegative((byte) Memory.read(shAddress));
 
 		break;
 		case("INX"):
@@ -1187,10 +1187,10 @@ public class CPU6502 {
 		case("JSR"):
 			shProgramCounter--;
 
-		Memory.write((short) ((short) 0x0100+Byte.toUnsignedInt(byStackPointer)) , (byte) ((shProgramCounter >> 8) & 0x00FF));
+		Memory.write((short) getSP() , (byte) ((shProgramCounter >> 8) & 0x00FF));
 		byStackPointer--;
 
-		Memory.write((short) ((short) 0x0100+Byte.toUnsignedInt(byStackPointer)) , (byte) (shProgramCounter & 0x00FF));
+		Memory.write((short) getSP() , (byte) (shProgramCounter & 0x00FF));
 		byStackPointer--;
 
 		shProgramCounter = shAddress;
@@ -1240,7 +1240,7 @@ public class CPU6502 {
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Short.toUnsignedInt(temp));
+			Memory.write(shAddress , (byte) temp);
 
 		}
 
@@ -1277,7 +1277,7 @@ public class CPU6502 {
 		case("PLA"):
 			byStackPointer++;
 
-		byAccumulator = (byte) Memory.read(getSP());
+		byAccumulator = (byte) Memory.read((short) getSP());
 
 		checkZero(byAccumulator);
 		checkNegative(byAccumulator);
@@ -1286,7 +1286,7 @@ public class CPU6502 {
 		case("PLP"):
 			byStackPointer++;
 
-		byStatusFlags = (byte) Memory.read(getSP());
+		byStatusFlags = (byte) Memory.read((short) getSP());
 
 		setStatusFlag('U' , true);
 
@@ -1311,7 +1311,7 @@ public class CPU6502 {
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) shShiftingOperand));
+			Memory.write(shAddress , (byte) shShiftingOperand);
 
 		}
 
@@ -1332,7 +1332,7 @@ public class CPU6502 {
 		}
 		else
 		{
-			Memory.write((short) Short.toUnsignedInt(shAddress) , (byte) Byte.toUnsignedInt((byte) temp));
+			Memory.write(shAddress , (byte) temp);
 
 		}
 
@@ -1340,25 +1340,25 @@ public class CPU6502 {
 		case("RTI"):
 			byStackPointer++;
 			
-			byStatusFlags = (byte) Memory.read(getSP());
+			byStatusFlags = (byte) Memory.read((short) getSP());
 			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('B') ? 0b11101111 : 0));
 			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('-') ? 0b11011111 : 0));
 
 			byStackPointer++;
-		byLoByte = (byte) Memory.read(getSP());
+		byLoByte = (byte) Memory.read((short) getSP());
 		
 		byStackPointer++;
-		byHiByte = (byte) Memory.read(getSP());
+		byHiByte = (byte) Memory.read((short) getSP());
 
 		shProgramCounter = (short) ((Byte.toUnsignedInt(byHiByte) * 256) + Byte.toUnsignedInt(byLoByte));
 
 		break;
 		case("RTS"):
 			byStackPointer++;
-			byLoByte = (byte) Memory.read(getSP());
+			byLoByte = (byte) Memory.read((short) getSP());
 
 		byStackPointer++;
-		byHiByte = (byte) Memory.read(getSP());
+		byHiByte = (byte) Memory.read((short) getSP());
 
 		shProgramCounter = (short) (getLO() + 256 * getHI());
 
@@ -1384,15 +1384,15 @@ public class CPU6502 {
 
 		break;
 		case("STA"):
-			Memory.write((short) Short.toUnsignedInt(shAddress) , byAccumulator);
+			Memory.write(shAddress , byAccumulator);
 
 		break;
 		case("STX"):
-			Memory.write((short) Short.toUnsignedInt(shAddress) , byIndexX);
+			Memory.write(shAddress , byIndexX);
 
 		break;
 		case("STY"):
-			Memory.write((short) Short.toUnsignedInt(shAddress) , byIndexY);
+			Memory.write(shAddress , byIndexY);
 
 		break;
 		case("TAX"):

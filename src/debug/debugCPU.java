@@ -109,7 +109,7 @@ public class debugCPU
 	
 	private int getCpuRam(int iAddress)
 	{
-		return this.Memory.read(iAddress);
+		return this.Memory.read((short) iAddress);
 	}
 	
 	// ===========================================================================================

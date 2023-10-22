@@ -58,12 +58,11 @@ public class Apple1 extends JPanel{
 	private JTextField StartAddress;
 	private JTextField EndAddress;
 	private JTextField BootstrapAddress;
-	private JButton saveButton;
+	private JButton SaveButton;
 
 	private JLabel StartLocation;
 	private JLabel EndLocation;
 	private JLabel BootstrapLocation;
-
 
 	private Monitor Screen;
 	private RAM Memory;
@@ -146,7 +145,7 @@ public class Apple1 extends JPanel{
 
 				Memory.resetMemory();
 				CPU.resetCPU();
-				CPU.setisRunning(false);
+				CPU.setRunning(false);
 
 				On.setVisible(true);
 				Off.setVisible(false);
@@ -193,7 +192,7 @@ public class Apple1 extends JPanel{
 					CPU.resetVector();
 
 					Screen.setCleared(true);
-					CPU.setisRunning(true);
+					CPU.setRunning(true);
 
 				}
 
@@ -239,7 +238,7 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRun == true)				
 				{
-					Storage.loadCassette(1 , (short) 0xE000);
+					Storage.loadSelectedCassette(1 , (short) 0xE000);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Integer BASIC bootstrapped to memory at address E000");
 
@@ -267,14 +266,13 @@ public class Apple1 extends JPanel{
 					{
 						String szInvalidBootstrapLocation = FileUI.getSelectedFile().getName().substring(0, 4);
 
-						if(Utils.Validate("^[0-9a-fA-F]{4}$" , szInvalidBootstrapLocation) == true)
+						if(szInvalidBootstrapLocation.matches("^[0-9a-fA-F]{4}$") == true)
 						{
-
 							short shBootstrapLocation = (short) Integer.parseInt(szInvalidBootstrapLocation , 16);
 
 							Storage.loadFile(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
 
-							JOptionPane.showMessageDialog(Screen.getScreen() , FileUI.getSelectedFile().getName() + " bootstrapped to memory at address " + FileUI.getSelectedFile().getName().substring(0, 4));
+							JOptionPane.showMessageDialog(Screen.getScreen() , FileUI.getSelectedFile().getName() + " bootstrapped to memory at address " + szInvalidBootstrapLocation);
 
 						}
 						else
@@ -296,7 +294,7 @@ public class Apple1 extends JPanel{
 	{
 		createSaveGUI();
 
-		saveButton.addActionListener( new ActionListener() 
+		SaveButton.addActionListener( new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{ 
@@ -306,7 +304,7 @@ public class Apple1 extends JPanel{
 					String szEndAddress = EndAddress.getText();
 					String szBootLocation = BootstrapAddress.getText();
 
-					if(Utils.Validate("^[0-9a-fA-F]{4}$" , szStartAddress) == true && Utils.Validate("^[0-9a-fA-F]{4}$" , szEndAddress) == true && Utils.Validate("^[0-9a-fA-F]{4}$" , szBootLocation) == true )
+					if(szStartAddress.matches("^[0-9a-fA-F]{4}$") == true && szEndAddress.matches("^[0-9a-fA-F]{4}$") == true && szBootLocation.matches("^[0-9a-fA-F]{4}$"))
 					{
 						short shStartAddressValid = (short) Integer.parseInt(szStartAddress , 16);
 						short shEndAddressValid = (short) Integer.parseInt(szEndAddress , 16);
@@ -392,7 +390,7 @@ public class Apple1 extends JPanel{
 
 		while (bEmulatorPaused == false && bEmulatorRun == true )
 		{
-			if(CPU.getisRunning() == true || Screen.getCleared() == true)
+			if(CPU.getRunning() == true || Screen.getCleared() == true)
 			{
 				try 
 				{	
@@ -409,7 +407,7 @@ public class Apple1 extends JPanel{
 					//Thread.sleep(400);
 					//Thread.sleep(200);
 
-					PIA.refresh();
+					PIA.refreshPeripherals();
 
 				}
 				catch (InterruptedException e) 
@@ -420,8 +418,6 @@ public class Apple1 extends JPanel{
 			}
 
 		} while (bEmulatorRun == true);
-			
-		
 
 	};
 
@@ -430,7 +426,6 @@ public class Apple1 extends JPanel{
 		Memory.bootstrapROMS(StorageROM.getROM() , (short) 0xFF00);
 
 	}
-
 
 	private void createMainGUI(String szWindowTitle) throws InterruptedException 
 	{
@@ -501,7 +496,7 @@ public class Apple1 extends JPanel{
 		BootstrapLocation = new JLabel("Bootstrap to Memory At: ");
 		BootstrapAddress = new JTextField();
 
-		saveButton = new JButton("Ok");
+		SaveButton = new JButton("Ok");
 
 		SaveFrame.add(StartLocation);
 		SaveFrame.add(StartAddress);
@@ -513,7 +508,7 @@ public class Apple1 extends JPanel{
 		SaveFrame.add(BootstrapAddress);
 
 		SaveFrame.add(new JLabel());
-		SaveFrame.add(saveButton);
+		SaveFrame.add(SaveButton);
 
 		SaveFrame.setSize(350, 150);
 		SaveFrame.setResizable(false);

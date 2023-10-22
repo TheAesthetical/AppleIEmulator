@@ -18,14 +18,13 @@ public class RAM {
 	
 	public void write(short MemoryLocation , byte Data) 
 	{
-		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = Data;
+		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = (byte) Byte.toUnsignedInt(Data);
 		
 	}
 	
-	//Int instead of byte because of change of signage, reduces boilerplate later
-	public int read(int MemoryLocation) 
+	public int read(short MemoryLocation) 
 	{		
-		return Byte.toUnsignedInt(ComputerRAM[MemoryLocation]);
+		return Byte.toUnsignedInt(ComputerRAM[Short.toUnsignedInt(MemoryLocation)]);
 		
 	}
 	

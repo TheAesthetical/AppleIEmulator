@@ -19,7 +19,7 @@ public class ACI extends ROM {
 		
 	} 
 	
-	public void loadCassette(int iCassetteNumber , short shLocation) 
+	public void loadSelectedCassette(int iCassetteNumber , short shLocation) 
 	{
 		CurrentCassette = Cassettes[iCassetteNumber];
 		
@@ -41,7 +41,7 @@ public class ACI extends ROM {
 		
 		for (int i = 0; i < byMemoryBuffer.length; i++) 
 		{
-			byMemoryBuffer[i] = (byte) Memory.read(Short.toUnsignedInt(shStartAddress) + i);
+			byMemoryBuffer[i] = (byte) Memory.read((short) (shStartAddress + i));
 			
 		}
 		
