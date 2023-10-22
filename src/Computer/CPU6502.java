@@ -729,16 +729,16 @@ public class CPU6502 {
 		byHiByte = 0x00;
 		byLoByte = 0x00;
 
-				System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
+				//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
 
 		byInstruction = fetchNextInstruction();
 		incrementPC();
 
-				System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
+				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
-		shOperand = getOperandByAddressMode(byInstruction , shOperand);
+		shOperand = getAddress(byInstruction , shOperand);
 
-				System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
+				//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
 
 		executeOperation(byInstruction , shOperand);
 
@@ -762,7 +762,7 @@ public class CPU6502 {
 	//Getting Operand
 	//===================================================================
 
-	private short getOperandByAddressMode(byte byInstruction , short shOperand)
+	private short getAddress(byte byInstruction , short shOperand)
 	{
 		//Modes:
 		//ACC - byAccumulator
@@ -793,6 +793,11 @@ public class CPU6502 {
 		incrementPC();
 
 		shOperand = (short) (getLO() + 256 * getHI());
+		
+//		System.out.printf("byHiByte: %04X\n" , byHiByte); 
+//		System.out.printf("byLoByte: %04X\n" , byLoByte); 
+//		System.out.printf("shOperand: %04X\n" , shOperand); 
+
 
 		break;
 		case("ABX"):
@@ -836,11 +841,14 @@ public class CPU6502 {
 
 		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
-
+		
 		short shPointer = (short) ((byHiByte << 8) | byLoByte);
-
-		shOperand = (short) (Byte.toUnsignedInt((byte) (byte) Memory.read((short) (shPointer + 1))) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)));
-
+		
+		shOperand = (short) (Byte.toUnsignedInt((byte) ((byte) Memory.read((short) (shPointer + 1)) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)))));
+		//shOperand = (short) ((Byte.toUnsignedInt((byte) ((Memory.read((short) ((shPointer + 1) & 0xFFFF))) + (Memory.read(shPointer))))));
+		
+		System.out.printf("shOperand: %04X\n" , shOperand); 
+		
 		break;
 		case("XIN"):
 			byte byOffset = (byte) Memory.read(shProgramCounter);
@@ -918,7 +926,7 @@ public class CPU6502 {
 	{
 		byte byFetchedOperand = 0x00;
 
-		if ((OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("ACC")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IMM")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("REL")))
+		if ((OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("ACC")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IMM")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("IND")) || (OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getAddressingMode().equalsIgnoreCase("REL")))
 		{
 			byFetchedOperand = (byte) shAddress;
 
@@ -1187,7 +1195,7 @@ public class CPU6502 {
 		case("JSR"):
 			shProgramCounter--;
 
-		Memory.write((short) getSP() , (byte) ((shProgramCounter >> 8) & 0x00FF));
+		Memory.write((short) getSP() , (byte) ((shProgramCounter >>> 8) & 0x00FF));
 		byStackPointer--;
 
 		Memory.write((short) getSP() , (byte) (shProgramCounter & 0x00FF));
@@ -1266,7 +1274,6 @@ public class CPU6502 {
 		break;
 		case("PHP"):
 			Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00110000));
-			//Memory.write((short) getSP() , byStatusFlags);
 
 		byStackPointer--;
 		
