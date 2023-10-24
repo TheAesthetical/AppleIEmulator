@@ -475,7 +475,7 @@ public class CPU6502 {
 
 	}
 
-	public int getPC() 
+	private int getPC() 
 	{
 		return Short.toUnsignedInt(shProgramCounter);
 
@@ -731,12 +731,12 @@ public class CPU6502 {
 
 				//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
 
-		byInstruction = fetchNextInstruction();
+		byInstruction = fetchInstruction();
 		incrementPC();
 
 				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
-		shOperand = getAddress(byInstruction , shOperand);
+		shOperand = getOperand(byInstruction , shOperand);
 
 				//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
 
@@ -752,7 +752,7 @@ public class CPU6502 {
 
 	}
 
-	private byte fetchNextInstruction()
+	private byte fetchInstruction()
 	{
 		return (byte) Memory.read(shProgramCounter);
 
@@ -762,7 +762,7 @@ public class CPU6502 {
 	//Getting Operand
 	//===================================================================
 
-	private short getAddress(byte byInstruction , short shOperand)
+	private short getOperand(byte byInstruction , short shOperand)
 	{
 		//Modes:
 		//ACC - byAccumulator
@@ -844,10 +844,10 @@ public class CPU6502 {
 		
 		short shPointer = (short) ((byHiByte << 8) | byLoByte);
 		
-		shOperand = (short) (Byte.toUnsignedInt((byte) ((byte) Memory.read((short) (shPointer + 1)) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)))));
+		shOperand = (short) (Byte.toUnsignedInt((byte) (Memory.read((short) (shPointer + 1)))) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)));
 		//shOperand = (short) ((Byte.toUnsignedInt((byte) ((Memory.read((short) ((shPointer + 1) & 0xFFFF))) + (Memory.read(shPointer))))));
 		
-		System.out.printf("shOperand: %04X\n" , shOperand); 
+		//System.out.printf("shOperand: %04X\n" , shOperand); 
 		
 		break;
 		case("XIN"):
@@ -922,7 +922,7 @@ public class CPU6502 {
 
 	}
 
-	private byte getOperand(byte byOpcode , short shAddress)
+	private byte getOperandData(byte byOpcode , short shAddress)
 	{
 		byte byFetchedOperand = 0x00;
 
@@ -952,13 +952,13 @@ public class CPU6502 {
 		switch(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation())
 		{
 		case("ADC"):
-			byFetchedOperand = getOperand(byInstruction , shAddress); 
+			byFetchedOperand = getOperandData(byInstruction , shAddress); 
 
 		byAccumulator = add((byte) (byFetchedOperand));
 
 		break;
 		case("AND"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byAccumulator = (byte) (getA() & byFetchedOperand);
 
@@ -969,7 +969,7 @@ public class CPU6502 {
 		case("ASL"):
 			short shShiftingOperand;
 
-		shShiftingOperand = (short) getOperand(byInstruction , shAddress);
+		shShiftingOperand = (short) getOperandData(byInstruction , shAddress);
 
 		shShiftingOperand = (short) (shShiftingOperand << 1);
 
@@ -1020,7 +1020,7 @@ public class CPU6502 {
 
 		break;
 		case("BIT"):	
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		checkZero((byte) (byAccumulator & byFetchedOperand));
 		setStatusFlag('N' , ((byFetchedOperand & 0b10000000) == 0b10000000));
@@ -1102,7 +1102,7 @@ public class CPU6502 {
 		case("CMP"):
 			byte byCompareResult;
 
-		byFetchedOperand = getOperand(byInstruction , shAddress);	
+		byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		byCompareResult = (byte) (getA() - Byte.toUnsignedInt(byFetchedOperand));
 
@@ -1112,7 +1112,7 @@ public class CPU6502 {
 
 		break;
 		case("CPX"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		byCompareResult = (byte) (getX() - Byte.toUnsignedInt(byFetchedOperand));
 
@@ -1123,7 +1123,7 @@ public class CPU6502 {
 
 		break;
 		case("CPY"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		byCompareResult = (byte) (getY() - Byte.toUnsignedInt(byFetchedOperand));
 
@@ -1134,7 +1134,7 @@ public class CPU6502 {
 
 		break;
 		case("DEC"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		Memory.write(shAddress , (byte) (byFetchedOperand - 1));
 
@@ -1157,7 +1157,7 @@ public class CPU6502 {
 
 		break;
 		case("EOR"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		byAccumulator = (byte) (byAccumulator ^ Byte.toUnsignedInt(byFetchedOperand));
 
@@ -1166,7 +1166,7 @@ public class CPU6502 {
 
 		break;
 		case("INC"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);	
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
 		Memory.write(shAddress , (byte) (byFetchedOperand + 1));
 
@@ -1205,7 +1205,7 @@ public class CPU6502 {
 
 		break;
 		case("LDA"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byAccumulator = byFetchedOperand;
 
@@ -1216,7 +1216,7 @@ public class CPU6502 {
 
 		break;
 		case("LDX"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byIndexX = byFetchedOperand;
 
@@ -1225,7 +1225,7 @@ public class CPU6502 {
 
 		break;
 		case("LDY"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byIndexY = byFetchedOperand;
 
@@ -1234,7 +1234,7 @@ public class CPU6502 {
 
 		break;
 		case("LSR"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		setStatusFlag('C',(byFetchedOperand & 0x0001) == 0x0001);
 		short temp = (short)((0x00FF & byFetchedOperand) >> 1);
@@ -1258,7 +1258,7 @@ public class CPU6502 {
 
 			break;
 		case("ORA"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byAccumulator = (byte) (getA() | Byte.toUnsignedInt(byFetchedOperand));
 
@@ -1300,7 +1300,7 @@ public class CPU6502 {
 		break;
 		case("ROL"):
 
-			shShiftingOperand = (short) getOperand(byInstruction , shAddress);
+			shShiftingOperand = (short) getOperandData(byInstruction , shAddress);
 
 		shShiftingOperand = (short) (shShiftingOperand << 1);
 
@@ -1324,7 +1324,7 @@ public class CPU6502 {
 
 		break;
 		case("ROR"):
-			byte byShiftingOperand = getOperand(byInstruction , shAddress);
+			byte byShiftingOperand = getOperandData(byInstruction , shAddress);
 
 	 temp = (short)(((0x00FF&byShiftingOperand)>>1) | (short)(getStatusFlag('C') ? 0x0080 : 0));
 
@@ -1373,7 +1373,7 @@ public class CPU6502 {
 
 		break;
 		case("SBC"):
-			byFetchedOperand = getOperand(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		byAccumulator = add((byte) (~byFetchedOperand));
 

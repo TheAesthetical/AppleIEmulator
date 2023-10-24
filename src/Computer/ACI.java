@@ -15,7 +15,7 @@ public class ACI extends ROM {
 		
 		Memory = activeMemory;
 		
-		Memory.bootstrapROMS(getROM() , (short) 0xC100);
+		Memory.bootstrapROM(getROM() , (short) 0xC100);
 		
 	} 
 	
@@ -23,7 +23,7 @@ public class ACI extends ROM {
 	{
 		CurrentCassette = Cassettes[iCassetteNumber];
 		
-		Memory.bootstrapROMS(CurrentCassette.getROM() , shLocation);
+		Memory.bootstrapROM(CurrentCassette.getROM() , shLocation);
 		
 	}
 	
@@ -31,7 +31,7 @@ public class ACI extends ROM {
 	{
 		CurrentCassette = new ROM(iFileSize , szFileName);
 		
-		Memory.bootstrapROMS(CurrentCassette.getROM() , shLocation);
+		Memory.bootstrapROM(CurrentCassette.getROM() , shLocation);
 		
 	}
 	

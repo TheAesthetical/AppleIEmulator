@@ -7,15 +7,15 @@ import java.io.IOException;
 public class ROM {
 
 	private Utilities Utils = new Utilities();
-	private byte[] ComputerROM;
+	private byte[] byComputerROM;
 
 	public ROM(int iByteSize , String szROMFileName) {
 
-		ComputerROM = new byte[iByteSize];
+		byComputerROM = new byte[iByteSize];
 		
 		try (FileInputStream ByteStream = new FileInputStream(Utils.getDirectoryName() + szROMFileName)) 
 		{	
-			ByteStream.read(ComputerROM , 0 , ComputerROM.length);
+			ByteStream.read(byComputerROM , 0 , byComputerROM.length);
 
 		} 
 		catch (IOException e) 
@@ -28,7 +28,7 @@ public class ROM {
 	
 	public byte[] getROM() 
 	{
-		return ComputerROM;
+		return byComputerROM;
 		
 	}
 

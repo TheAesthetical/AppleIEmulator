@@ -31,7 +31,7 @@ public class Monitor extends JPanel implements Runnable{
 	private int iCharsOnLine = 0;
 	private int iLinesOnScreen = 1;
 
-	private boolean bIsCleared = false;
+	private boolean bCleared = false;
 
 	private JFrame Screen = new JFrame();
 	
@@ -43,30 +43,12 @@ public class Monitor extends JPanel implements Runnable{
 
 	}
 
-	public boolean[][] getPixelGrid() 
-	{
-		return bPixelGrid;
-		
-	}
-
-	public boolean getCursorActive() 
-	{
-		return bCursorActive;
-
-	}
-
 	public boolean getCleared() 
 	{
-		return bIsCleared;
+		return bCleared;
 
 	}
 
-	public Thread getCursorThread() 
-	{
-		return CursorThread;
-
-	}
-	
 	public void setCursorActive(boolean bCursorActive) 
 	{
 		this.bCursorActive = bCursorActive;
@@ -75,7 +57,7 @@ public class Monitor extends JPanel implements Runnable{
 	
 	public void setCleared(boolean bIsCleared) 
 	{
-		this.bIsCleared = bIsCleared;
+		this.bCleared = bIsCleared;
 
 	}
 	
@@ -102,7 +84,11 @@ public class Monitor extends JPanel implements Runnable{
 		
 		bPixelGrid = new boolean[iGridHeight][iGridWidth];
 		
-		makeWindow();
+		this.setPreferredSize(new Dimension(iGridWidth * iCellSize , iGridHeight * iCellSize));
+		Screen.getContentPane().add(this);
+		
+		Screen.pack();
+		Screen.setVisible(false);
 
 		iTotalCharsOnLine = iGridWidth / (iCharWidth + 1);
 		iTotalLinesOnScreen = (iGridHeight / iCharHeight) + 1;
@@ -112,18 +98,6 @@ public class Monitor extends JPanel implements Runnable{
 		CursorThread = new Thread (this , "Cursor Thread");
 		CursorThread.start();
 
-	}
-	
-	private void makeWindow()
-	{
-		//this.equals(bPixelGrid);
-		
-		this.setPreferredSize(new Dimension(iGridWidth * iCellSize , iGridHeight * iCellSize));
-		Screen.getContentPane().add(this);
-		
-		Screen.pack();
-		Screen.setVisible(false);
-		
 	}
 
 	//	trying to achieve the weird uninitialised look about it
@@ -159,7 +133,7 @@ public class Monitor extends JPanel implements Runnable{
 			
 			resetMonitor();
 
-		} while(bIsCleared == false);
+		} while(bCleared == false);
 
 	}
 

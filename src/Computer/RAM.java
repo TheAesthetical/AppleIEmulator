@@ -2,11 +2,11 @@ package Computer;
 
 public class RAM {
 	
-	private byte[] ComputerRAM;
+	private byte[] byComputerRAM;
 
 	public RAM(int iByteSize) 
 	{
-		ComputerRAM = new byte[iByteSize];
+		byComputerRAM = new byte[iByteSize];
 		
 	}
 	
@@ -16,49 +16,41 @@ public class RAM {
 //		ComputerRAM = new byte[0x10000];
 //	}
 	
-	public void write(short MemoryLocation , byte Data) 
+	public void write(short shMemoryLocation , byte byData) 
 	{
-		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = (byte) Byte.toUnsignedInt(Data);
+		byComputerRAM[Short.toUnsignedInt(shMemoryLocation)] = (byte) Byte.toUnsignedInt(byData);
 		
 	}
 	
-	public int read(short MemoryLocation) 
+	public int read(short shMemoryLocation) 
 	{		
-		return Byte.toUnsignedInt(ComputerRAM[Short.toUnsignedInt(MemoryLocation)]);
+		return Byte.toUnsignedInt(byComputerRAM[Short.toUnsignedInt(shMemoryLocation)]);
 		
 	}
 	
-	public void resetMemoryLocation(short MemoryLocation) 
+	public void resetLocation(short shMemoryLocation) 
 	{	
-		ComputerRAM[Short.toUnsignedInt(MemoryLocation)] = 0x00;
+		byComputerRAM[Short.toUnsignedInt(shMemoryLocation)] = 0x00;
 		
 	}
 	
-	public void resetMemory() 
+	public void resetRAM() 
 	{	
-		for (int i = 0; i < ComputerRAM.length; i++) 
+		for (int i = 0; i < byComputerRAM.length; i++) 
 		{
-			ComputerRAM[i] = 0x00;
+			byComputerRAM[i] = 0x00;
 			
 		}
 		
 	}
 	
-	public void resetMemoryStream(short shStart , short shEnd) 
+	public void bootstrapROM(byte[] byROMContentStream , short shStartMemoryLocation) 
 	{	
-		for (int i = Short.toUnsignedInt(shStart); i < Short.toUnsignedInt(shEnd); i++) 
+		for (int i = 0; i < byROMContentStream.length; i++) 
 		{
-			ComputerRAM[i] = 0x00;
+			byComputerRAM[i + Short.toUnsignedInt(shStartMemoryLocation)] = byROMContentStream[i];
 			
-		}
-		
-	}
-	
-	public void bootstrapROMS(byte[] ContentStream , short StartMemoryLocation) 
-	{	
-		for (int i = 0; i < ContentStream.length; i++) 
-		{
-			ComputerRAM[i + Short.toUnsignedInt(StartMemoryLocation)] = ContentStream[i];
+			if((i + Short.toUnsignedInt(shStartMemoryLocation) + 1) > 0xFFFF) break;
 				
 		}
 		

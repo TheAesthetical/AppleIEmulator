@@ -39,25 +39,24 @@ public class Apple1 extends JPanel{
 
 	private ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
 
-	private JMenuItem On;
-	private JMenuItem Off;
+	private JMenuItem OnButton;
+	private JMenuItem OffButton;
 
 	private JMenuItem ResetButton;
 	private JMenuItem CLSButton;
 
-	private JMenu LoadCassette;
 	private JMenuItem IntegerBASIC;
-	private JMenuItem Other;
-	private JMenuItem SaveCassette;
+	private JMenuItem OtherFileButton;
+	private JMenuItem MenuSaveButton;
 
 	private File SaveFile;
 	private JFileChooser FileUI;
 	private FileNameExtensionFilter BinaryFileFilter;
 
-	private JFrame SaveFrame;
-	private JTextField StartAddress;
-	private JTextField EndAddress;
-	private JTextField BootstrapAddress;
+	private JFrame SaveInterfaceFrame;
+	private JTextField StartLocationInput;
+	private JTextField EndLocationInput;
+	private JTextField BootstrapLocationInput;
 	private JButton SaveButton;
 
 	private JLabel StartLocation;
@@ -72,9 +71,9 @@ public class Apple1 extends JPanel{
 	private ACI Storage;
 
 	private boolean bEmulatorPaused;
-	private boolean bEmulatorRun;
+	private boolean bEmulatorRunning;
 
-	private Thread MainEmulatorThread;
+	private Thread EmulatorThread;
 
 	public Apple1(int iMonitorScale) throws InterruptedException
 	{
@@ -90,33 +89,33 @@ public class Apple1 extends JPanel{
 		CPU = new CPU6502(Memory);
 
 		Storage = new ACI(256 , "ACI.bin" , Memory);
-		PIA = new PIA6820(CPU , Memory , Screen);
+		PIA = new PIA6820(Memory , Screen);
 
-		emulate();
+		startEmulator();
 
 	}
 
-	private void emulate()
+	private void startEmulator()
 	{
 		Screen.getScreen().setVisible(true);
 
-		On.setVisible(true);
-		Off.setVisible(false);
+		OnButton.setVisible(true);
+		OffButton.setVisible(false);
 
-		On.addActionListener(new ActionListener() 
+		OnButton.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
 				System.out.println("Power ON pressed!");
 
-				if (bEmulatorRun == false)
+				if (bEmulatorRunning == false)
 				{
 					initaliseMemory();
 
-					MainEmulatorThread = new Thread(MainPowerOn);
+					EmulatorThread = new Thread(MainPowerOn);
 					bEmulatorPaused = false;
-					bEmulatorRun = true;
-					MainEmulatorThread.start();
+					bEmulatorRunning = true;
+					EmulatorThread.start();
 
 				}
 				else
@@ -124,31 +123,31 @@ public class Apple1 extends JPanel{
 					System.err.println("EMULATOR ALREADY RUNNING!");
 				}
 
-				On.setVisible(false);
-				Off.setVisible(true);
+				OnButton.setVisible(false);
+				OffButton.setVisible(true);
 
 			}
 
 		});
 
-		Off.addActionListener(new ActionListener() 
+		OffButton.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{			
 				System.out.println("Power OFF pressed!");
 
-				bEmulatorRun = false;
+				bEmulatorRunning = false;
 
 				Screen.setCleared(false);
 				Screen.setCursorActive(false);
 				Screen.resetMonitor();
 
-				Memory.resetMemory();
+				Memory.resetRAM();
 				CPU.resetCPU();
 				CPU.setRunning(false);
 
-				On.setVisible(true);
-				Off.setVisible(false);
+				OnButton.setVisible(true);
+				OffButton.setVisible(false);
 
 			}
 
@@ -181,7 +180,7 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(bEmulatorPaused == false && bEmulatorRun == true)
+				if(bEmulatorPaused == false && bEmulatorRunning == true)
 				{
 					System.out.println("RESET");
 
@@ -204,7 +203,7 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(bEmulatorPaused == false && bEmulatorRun == true)				
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
 					System.out.println("CLEAR SCREEN");
 
@@ -218,11 +217,11 @@ public class Apple1 extends JPanel{
 
 		});
 
-		SaveCassette.addActionListener( new ActionListener() 
+		MenuSaveButton.addActionListener( new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(bEmulatorPaused == false && bEmulatorRun == true)				
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
 					saveToStorage();
 
@@ -236,7 +235,7 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{	
-				if(bEmulatorPaused == false && bEmulatorRun == true)				
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
 					Storage.loadSelectedCassette(1 , (short) 0xE000);
 
@@ -248,11 +247,11 @@ public class Apple1 extends JPanel{
 
 		});
 
-		Other.addActionListener( new ActionListener() 
+		OtherFileButton.addActionListener( new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{ 
-				if(bEmulatorPaused == false && bEmulatorRun == true)				
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
 					FileUI = new JFileChooser();
 
@@ -269,7 +268,7 @@ public class Apple1 extends JPanel{
 						if(szInvalidBootstrapLocation.matches("^[0-9a-fA-F]{4}$") == true)
 						{
 							short shBootstrapLocation = (short) Integer.parseInt(szInvalidBootstrapLocation , 16);
-
+							
 							Storage.loadFile(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
 
 							JOptionPane.showMessageDialog(Screen.getScreen() , FileUI.getSelectedFile().getName() + " bootstrapped to memory at address " + szInvalidBootstrapLocation);
@@ -298,11 +297,11 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{ 
-				if(bEmulatorPaused == false && bEmulatorRun == true)				
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					String szStartAddress = StartAddress.getText();
-					String szEndAddress = EndAddress.getText();
-					String szBootLocation = BootstrapAddress.getText();
+					String szStartAddress = StartLocationInput.getText();
+					String szEndAddress = EndLocationInput.getText();
+					String szBootLocation = BootstrapLocationInput.getText();
 
 					if(szStartAddress.matches("^[0-9a-fA-F]{4}$") == true && szEndAddress.matches("^[0-9a-fA-F]{4}$") == true && szBootLocation.matches("^[0-9a-fA-F]{4}$"))
 					{
@@ -311,7 +310,7 @@ public class Apple1 extends JPanel{
 
 						if(Short.toUnsignedInt(shStartAddressValid) <= Short.toUnsignedInt(shEndAddressValid))
 						{      
-							SaveFrame.setVisible(false);
+							SaveInterfaceFrame.setVisible(false);
 
 							FileUI = new JFileChooser();
 							FileUI.setAcceptAllFileFilterUsed(false);
@@ -321,14 +320,16 @@ public class Apple1 extends JPanel{
 
 							if (FileUI.getSelectedFile() != null)
 							{
-								try (FileOutputStream ByteStream = new FileOutputStream(FileUI.getSelectedFile())) 
+								SaveFile = new File(szBootLocation + FileUI.getSelectedFile().getName() + ".bin");
+								
+								try (FileOutputStream ByteStream = new FileOutputStream(SaveFile)) 
 								{	
 									ByteStream.write(Storage.getByteStream(shStartAddressValid , shEndAddressValid));
+									
+									System.out.println(SaveFile);
+									System.out.println(FileUI.getSelectedFile());
 
-									SaveFile = new File(szBootLocation + FileUI.getSelectedFile().getName());
-									FileUI.getSelectedFile().renameTo(SaveFile);
-
-									JOptionPane.showMessageDialog(SaveFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
+									JOptionPane.showMessageDialog(SaveInterfaceFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
 
 								} 
 								catch (IOException e1) 
@@ -341,24 +342,24 @@ public class Apple1 extends JPanel{
 							}
 							else
 							{
-								JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
-								SaveFrame.setVisible(false);
+								JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+								SaveInterfaceFrame.setVisible(false);
 
 							}
 
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
-							SaveFrame.setVisible(false);
+							JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+							SaveInterfaceFrame.setVisible(false);
 
 						}
 
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(SaveFrame , "Error!\nAddresses not saved successfully");
-						SaveFrame.setVisible(false);
+						JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+						SaveInterfaceFrame.setVisible(false);
 
 					}
 
@@ -388,7 +389,7 @@ public class Apple1 extends JPanel{
 
 		}
 
-		while (bEmulatorPaused == false && bEmulatorRun == true )
+		while (bEmulatorPaused == false && bEmulatorRunning == true )
 		{
 			if(CPU.getRunning() == true || Screen.getCleared() == true)
 			{
@@ -417,13 +418,13 @@ public class Apple1 extends JPanel{
 
 			}
 
-		} while (bEmulatorRun == true);
+		} while (bEmulatorRunning == true);
 
 	};
 
 	private void initaliseMemory()
 	{
-		Memory.bootstrapROMS(StorageROM.getROM() , (short) 0xFF00);
+		Memory.bootstrapROM(StorageROM.getROM() , (short) 0xFF00);
 
 	}
 
@@ -439,41 +440,41 @@ public class Apple1 extends JPanel{
 		JMenuBar MenuBar = new JMenuBar();
 		MenuBar.setSize(iGridWidth , 10);
 
-		JMenu PowerSwitch = new JMenu("Power");
+		JMenu PowerOptions = new JMenu("Power");
 
-		On = new JMenuItem("On");
-		Off = new JMenuItem("Off");
+		OnButton = new JMenuItem("On");
+		OffButton = new JMenuItem("Off");
 
-		PowerSwitch.add(On);
-		PowerSwitch.add(Off);
+		PowerOptions.add(OnButton);
+		PowerOptions.add(OffButton);
 
-		MenuBar.add(PowerSwitch);
+		MenuBar.add(PowerOptions);
 
-		JMenu Switches = new JMenu("Switches");
+		JMenu SwitchOptions = new JMenu("Switches");
 
 		ResetButton = new JMenuItem("RESET");
 		CLSButton = new JMenuItem("CLS");
 
-		Switches.add(ResetButton);
-		Switches.add(CLSButton);
+		SwitchOptions.add(ResetButton);
+		SwitchOptions.add(CLSButton);
 
-		MenuBar.add(Switches);
+		MenuBar.add(SwitchOptions);
 
-		JMenu ACIInterface = new JMenu("ACI");
+		JMenu ACInterface = new JMenu("ACI");
 
-		LoadCassette = new JMenu("Load...");
+		JMenu LoadDropdown = new JMenu("Load...");
 		IntegerBASIC = new JMenuItem("Integer BASIC");
-		Other = new JMenuItem("Other...");
+		OtherFileButton = new JMenuItem("Other...");
 
-		LoadCassette.add(IntegerBASIC);
-		LoadCassette.add(Other);
+		LoadDropdown.add(IntegerBASIC);
+		LoadDropdown.add(OtherFileButton);
 
-		SaveCassette = new JMenuItem("Save...");
+		MenuSaveButton = new JMenuItem("Save...");
 
-		ACIInterface.add(LoadCassette);
-		ACIInterface.add(SaveCassette);
+		ACInterface.add(LoadDropdown);
+		ACInterface.add(MenuSaveButton);
 
-		MenuBar.add(ACIInterface);
+		MenuBar.add(ACInterface);
 
 		Screen.getScreen().add(MenuBar , BorderLayout.SOUTH);
 
@@ -484,37 +485,37 @@ public class Apple1 extends JPanel{
 
 	private void createSaveGUI() 
 	{
-		SaveFrame = new JFrame("Save Memory to File");
-		SaveFrame.setLayout(new GridLayout(4 , 2));
+		SaveInterfaceFrame = new JFrame("Save Memory to File");
+		SaveInterfaceFrame.setLayout(new GridLayout(4 , 2));
 
 		StartLocation = new JLabel("Start Address: ");
-		StartAddress = new JTextField();
+		StartLocationInput = new JTextField();
 
 		EndLocation = new JLabel("End Address: ");
-		EndAddress = new JTextField();
+		EndLocationInput = new JTextField();
 
 		BootstrapLocation = new JLabel("Bootstrap to Memory At: ");
-		BootstrapAddress = new JTextField();
+		BootstrapLocationInput = new JTextField();
 
 		SaveButton = new JButton("Ok");
 
-		SaveFrame.add(StartLocation);
-		SaveFrame.add(StartAddress);
+		SaveInterfaceFrame.add(StartLocation);
+		SaveInterfaceFrame.add(StartLocationInput);
 
-		SaveFrame.add(EndLocation);
-		SaveFrame.add(EndAddress);
+		SaveInterfaceFrame.add(EndLocation);
+		SaveInterfaceFrame.add(EndLocationInput);
 
-		SaveFrame.add(BootstrapLocation);
-		SaveFrame.add(BootstrapAddress);
+		SaveInterfaceFrame.add(BootstrapLocation);
+		SaveInterfaceFrame.add(BootstrapLocationInput);
 
-		SaveFrame.add(new JLabel());
-		SaveFrame.add(SaveButton);
+		SaveInterfaceFrame.add(new JLabel());
+		SaveInterfaceFrame.add(SaveButton);
 
-		SaveFrame.setSize(350, 150);
-		SaveFrame.setResizable(false);
-		SaveFrame.setIconImage(WindowFavicon.getImage());
+		SaveInterfaceFrame.setSize(350, 150);
+		SaveInterfaceFrame.setResizable(false);
+		SaveInterfaceFrame.setIconImage(WindowFavicon.getImage());
 
-		SaveFrame.setVisible(true);
+		SaveInterfaceFrame.setVisible(true);
 
 	}
 

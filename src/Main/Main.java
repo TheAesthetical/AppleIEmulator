@@ -12,7 +12,7 @@ public class Main {
 		System.setProperties(SmootherGUI);
 
 		//You can adjust this accordingly to your eyesight needs
-		final int iDisplayScale = 3;
+		final int iDisplayScale = 4;
 
 		Apple1 Apple1Emulator = new Apple1(iDisplayScale);
 

@@ -6,7 +6,6 @@ import Terminal.Monitor;
 
 public class PIA6820 {
 
-	private CPU6502 CPU;
 	private RAM Memory;
 	private Monitor Screen;
 
@@ -31,9 +30,8 @@ public class PIA6820 {
 		
 	}
 
-	public PIA6820(CPU6502 activeCPU , RAM activeRAM , Monitor activeScreen) throws InterruptedException 
+	public PIA6820(RAM activeRAM , Monitor activeScreen) throws InterruptedException 
 	{
-		CPU = activeCPU;
 		Memory = activeRAM;
 		Screen = activeScreen;
 
@@ -52,16 +50,16 @@ public class PIA6820 {
 	{
 		//if(Screen != null && Screen.getIsResetted() == true && CPU.getisRunning() == true && Memory != null) 
 		//if(Screen.getCleared() == true && CPU.getisRunning() == true) 
-		if(CPU.getRunning() == true) 
+		if(Screen.getCleared() == true) 
 		{	
-			keyboard();
-			display();
+			refreshKeyboard();
+			refreshDisplay();
 
 		}
 
 	}
 	
-	private void keyboard() 
+	public void refreshKeyboard() 
 	{
 		if(bKeyPressed == true && (Memory.read(shKBDCR) & 0b10000000) == 0b00000000)
 		{
@@ -84,11 +82,10 @@ public class PIA6820 {
 		
 	}
 	
-	private void display() throws InterruptedException 
+	public void refreshDisplay() throws InterruptedException 
 	{		
 		if((Memory.read(shDSP) & 0b10000000) == 0b10000000)
 		{
-
 			if(Memory.read(shDSP) == 0x8D)
 			{
 				Screen.carriageReturn();
@@ -104,11 +101,11 @@ public class PIA6820 {
 
 			if((Memory.read(shKBDCR) & 0b10000000) == 0b10000000)
 			{	
-				Memory.resetMemoryLocation(shKBDCR);
+				Memory.resetLocation(shKBDCR);
 
 			}
 
-			Memory.resetMemoryLocation(shDSP);
+			Memory.resetLocation(shDSP);
 			
 		}
 		
