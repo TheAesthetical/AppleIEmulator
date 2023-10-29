@@ -413,21 +413,21 @@ public class CPU6502 {
 
 	private void interrupt()
 	{	
+		incrementPC();
+		
 		Memory.write((short) getSP(), (byte) (shProgramCounter >> 8));
-		byStackPointer = (byte) (getSP() - 1);
+		byStackPointer--;
 
 		Memory.write((short) getSP(), (byte) (shProgramCounter));
-		byStackPointer = (byte) (getSP() - 1);
-
-		setStatusFlag('B' , true);
-		setStatusFlag('U' , true);
-		
-		Memory.write((short) getSP() , byStatusFlags);
-		byStackPointer = (byte) (getSP() - 1);
+		byStackPointer--;
 		
 		setStatusFlag('I' , true);
+		
+		Memory.write((short) getSP() , byStatusFlags);
+		byStackPointer--;
 
-		irqVector();
+		nmiVector();
+		//irqVector();
 
 	}
 
@@ -437,7 +437,6 @@ public class CPU6502 {
 
 	private void nmiVector()
 	{
-		setStatusFlag('I' , true);
 		shProgramCounter = getVector((short) 0xFFFA , (short) 0xFFFB);
 
 	}
@@ -842,12 +841,16 @@ public class CPU6502 {
 		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 		
-		short shPointer = (short) ((byHiByte << 8) | byLoByte);
+		short shPointer = (short) (getHI() * 256 + getLO());
 		
-		shOperand = (short) (Byte.toUnsignedInt((byte) (Memory.read((short) (shPointer + 1)))) * 256 + Byte.toUnsignedInt((byte) Memory.read(shPointer)));
-		//shOperand = (short) ((Byte.toUnsignedInt((byte) ((Memory.read((short) ((shPointer + 1) & 0xFFFF))) + (Memory.read(shPointer))))));
+//		if((shPointer & 0x00FF) == 0x00FF) 
+//		{
+//			shPointer = (short) (shPointer - 0x00FF);
+//			shPointer = (short) (shPointer + 0x0100);
+//		
+//		}
 		
-		//System.out.printf("shOperand: %04X\n" , shOperand); 
+		shOperand = (short) (Memory.read((short) (shPointer + 1)) * 256 + Memory.read((short) (shPointer)));
 		
 		break;
 		case("XIN"):
@@ -1058,8 +1061,6 @@ public class CPU6502 {
 
 		break;
 		case("BRK"):
-			incrementPC();
-
 		interrupt();
 
 		break;
@@ -1189,7 +1190,7 @@ public class CPU6502 {
 
 		break;
 		case("JMP"):
-			shProgramCounter = shAddress;
+			shProgramCounter = (short) Short.toUnsignedInt(shAddress);
 
 		break;
 		case("JSR"):
@@ -1276,9 +1277,6 @@ public class CPU6502 {
 			Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00110000));
 
 		byStackPointer--;
-		
-		setStatusFlag('B' , false);
-		setStatusFlag('U' , false);
 
 		break;
 		case("PLA"):
@@ -1296,6 +1294,7 @@ public class CPU6502 {
 		byStatusFlags = (byte) Memory.read((short) getSP());
 
 		setStatusFlag('U' , true);
+		setStatusFlag('B' , false);
 
 		break;
 		case("ROL"):

@@ -46,6 +46,11 @@ public class Apple1 extends JPanel{
 	private JMenuItem CLSButton;
 
 	private JMenuItem IntegerBASIC;
+	private JMenuItem Apple30th;
+	private JMenuItem Microchess;
+	private JMenuItem LunarLander;
+	private JMenuItem Codebreaker;
+	
 	private JMenuItem OtherFileButton;
 	private JMenuItem MenuSaveButton;
 
@@ -110,8 +115,6 @@ public class Apple1 extends JPanel{
 
 				if (bEmulatorRunning == false)
 				{
-					initaliseMemory();
-
 					EmulatorThread = new Thread(MainPowerOn);
 					bEmulatorPaused = false;
 					bEmulatorRunning = true;
@@ -138,7 +141,7 @@ public class Apple1 extends JPanel{
 
 				bEmulatorRunning = false;
 
-				Screen.setCleared(false);
+				Screen.setCleared(true);
 				Screen.setCursorActive(false);
 				Screen.resetMonitor();
 
@@ -237,9 +240,74 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadSelectedCassette(1 , (short) 0xE000);
+					Storage.loadFileCassette("E000INTEGERBASIC.bin" , 4096 , (short) 0xE000);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Integer BASIC bootstrapped to memory at address E000");
+
+				}
+
+			}
+
+		});
+		
+		Apple30th.addActionListener( new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{	
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
+				{
+					Storage.loadFileCassette("0280APPLE30TH.bin" , 3456 , (short) 0x0280);
+
+					JOptionPane.showMessageDialog(Screen.getScreen() , "Apple's 30th bootstrapped to memory at address 0280");
+
+				}
+
+			}
+
+		});
+		
+		Microchess.addActionListener( new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{	
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
+				{
+					Storage.loadFileCassette("0300MICROCHESS.bin" , 2248 , (short) 0x0300);
+
+					JOptionPane.showMessageDialog(Screen.getScreen() , "Microchess bootstrapped to memory at address 0300");
+
+				}
+
+			}
+
+		});
+		
+		LunarLander.addActionListener( new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{	
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
+				{
+					Storage.loadFileCassette("0300LUNARLANDER.bin" , 1721 , (short) 0x0300);
+
+					JOptionPane.showMessageDialog(Screen.getScreen() , "Lunar Lander bootstrapped to memory at address 0300");
+
+				}
+
+			}
+
+		});
+		
+		Codebreaker.addActionListener( new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{	
+				if(bEmulatorPaused == false && bEmulatorRunning == true)				
+				{
+					Storage.loadFileCassette("0280CODEBREAKER1.bin" , 2432 , (short) 0x0280);
+					Storage.loadFileCassette("E000CODEBREAKER2.bin" , 4096 , (short) 0xE000);
+
+					JOptionPane.showMessageDialog(Screen.getScreen() , "Codebreaker bootstrapped to memory at address 0280");
 
 				}
 
@@ -268,8 +336,8 @@ public class Apple1 extends JPanel{
 						if(szInvalidBootstrapLocation.matches("^[0-9a-fA-F]{4}$") == true)
 						{
 							short shBootstrapLocation = (short) Integer.parseInt(szInvalidBootstrapLocation , 16);
-							
-							Storage.loadFile(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
+
+							Storage.loadFileCassette(FileUI.getSelectedFile().getName() , (int) FileUI.getSelectedFile().length() , shBootstrapLocation);
 
 							JOptionPane.showMessageDialog(Screen.getScreen() , FileUI.getSelectedFile().getName() + " bootstrapped to memory at address " + szInvalidBootstrapLocation);
 
@@ -321,11 +389,11 @@ public class Apple1 extends JPanel{
 							if (FileUI.getSelectedFile() != null)
 							{
 								SaveFile = new File(szBootLocation + FileUI.getSelectedFile().getName() + ".bin");
-								
+
 								try (FileOutputStream ByteStream = new FileOutputStream(SaveFile)) 
 								{	
-									ByteStream.write(Storage.getByteStream(shStartAddressValid , shEndAddressValid));
-									
+									ByteStream.write(Storage.getMemoryByteStream(shStartAddressValid , shEndAddressValid));
+
 									System.out.println(SaveFile);
 									System.out.println(FileUI.getSelectedFile());
 
@@ -377,6 +445,8 @@ public class Apple1 extends JPanel{
 		{
 			try 
 			{
+				initaliseMemory();
+				Screen.setCleared(false);
 				Screen.powerOnMonitor();
 
 			} 
@@ -389,15 +459,19 @@ public class Apple1 extends JPanel{
 
 		}
 
-		while (bEmulatorPaused == false && bEmulatorRunning == true )
+		if(CPU.getRunning() == true || Screen.getCleared() == true)
 		{
-			if(CPU.getRunning() == true || Screen.getCleared() == true)
+
+			while (bEmulatorPaused == false && bEmulatorRunning == true )
 			{
+				long lPreCycleTime = System.nanoTime();
+				
 				try 
 				{	
-					long lPreCycleTime = System.nanoTime();
 
 					CPU.executeInstruction();
+					
+					PIA.refreshPeripherals();
 
 					long lPostCycleTime = System.nanoTime();
 
@@ -408,17 +482,17 @@ public class Apple1 extends JPanel{
 					//Thread.sleep(400);
 					//Thread.sleep(200);
 
-					PIA.refreshPeripherals();
-
 				}
 				catch (InterruptedException e) 
 				{
 
 				}
 
-			}
 
-		} while (bEmulatorRunning == true);
+
+			} while (bEmulatorRunning == true);
+
+		}
 
 	};
 
@@ -464,9 +538,19 @@ public class Apple1 extends JPanel{
 
 		JMenu LoadDropdown = new JMenu("Load...");
 		IntegerBASIC = new JMenuItem("Integer BASIC");
+		Apple30th = new JMenuItem("Apple's 30th");
+		Microchess = new JMenuItem("Microchess");
+		LunarLander = new JMenuItem("Lunar Lander");
+		Codebreaker = new JMenuItem("Codebreaker");
+		
 		OtherFileButton = new JMenuItem("Other...");
 
 		LoadDropdown.add(IntegerBASIC);
+		LoadDropdown.add(Apple30th);
+		LoadDropdown.add(Microchess);
+		LoadDropdown.add(LunarLander);
+		LoadDropdown.add(Codebreaker);
+		
 		LoadDropdown.add(OtherFileButton);
 
 		MenuSaveButton = new JMenuItem("Save...");

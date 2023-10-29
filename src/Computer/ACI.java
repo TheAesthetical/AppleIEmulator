@@ -6,9 +6,6 @@ public class ACI extends ROM {
 	
 	private ROM CurrentCassette;
 	
-	private ROM IntegerBASIC = new ROM(4096 , "INTEGERBASIC.bin");
-	private ROM[] Cassettes = {CurrentCassette , IntegerBASIC};
-	
 	public ACI(int iSizeInBytes , String szFileName , RAM activeMemory)
 	{
 		super(iSizeInBytes , szFileName);
@@ -19,15 +16,7 @@ public class ACI extends ROM {
 		
 	} 
 	
-	public void loadSelectedCassette(int iCassetteNumber , short shLocation) 
-	{
-		CurrentCassette = Cassettes[iCassetteNumber];
-		
-		Memory.bootstrapROM(CurrentCassette.getROM() , shLocation);
-		
-	}
-	
-	public void loadFile(String szFileName , int iFileSize ,  short shLocation) 
+	public void loadFileCassette(String szFileName , int iFileSize ,  short shLocation) 
 	{
 		CurrentCassette = new ROM(iFileSize , szFileName);
 		
@@ -35,7 +24,7 @@ public class ACI extends ROM {
 		
 	}
 	
-	public byte[] getByteStream(short shStartAddress , short shEndAddress) 
+	public byte[] getMemoryByteStream(short shStartAddress , short shEndAddress) 
 	{
 		byte[] byMemoryBuffer = new byte[(Short.toUnsignedInt(shEndAddress) - Short.toUnsignedInt(shStartAddress)) + 1];
 		

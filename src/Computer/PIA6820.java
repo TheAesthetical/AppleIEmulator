@@ -36,6 +36,15 @@ public class PIA6820 {
 		Screen = activeScreen;
 
 	}
+	
+	public void resetPIA() 
+	{
+		Memory.resetLocation(shKBD);
+		Memory.resetLocation(shKBDCR);
+		Memory.resetLocation(shDSP);
+		Memory.resetLocation(shDSPCR);
+		
+	}
 
 //	public void debug()
 //	{
@@ -84,9 +93,9 @@ public class PIA6820 {
 	
 	public void refreshDisplay() throws InterruptedException 
 	{		
-		if((Memory.read(shDSP) & 0b10000000) == 0b10000000)
+		if(Memory.read(shDSP) > 0 && Memory.read(shDSP) != 0b01111111)
 		{
-			if(Memory.read(shDSP) == 0x8D)
+			if((Memory.read(shDSP) & 0b01111111) == 0x0D)
 			{
 				Screen.carriageReturn();
 
@@ -97,7 +106,10 @@ public class PIA6820 {
 
 			}
 			
-			TimeUnit.MILLISECONDS.sleep((long) 16.7);
+			//TimeUnit.MILLISECONDS.sleep((long) 16.7);
+			
+			//Somewhat of a hardware timer
+			//TimeUnit.MILLISECONDS.sleep((long) 4);
 
 			if((Memory.read(shKBDCR) & 0b10000000) == 0b10000000)
 			{	
