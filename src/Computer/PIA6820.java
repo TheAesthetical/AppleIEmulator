@@ -70,7 +70,8 @@ public class PIA6820 {
 	
 	public void refreshKeyboard() 
 	{
-		if(bKeyPressed == true && (Memory.read(shKBDCR) & 0b10000000) == 0b00000000)
+//		if(bKeyPressed == true && (Memory.read(shKBDCR) & 0b10000000) == 0b00000000)
+		if(bKeyPressed == true)
 		{
 			Memory.write(shKBD , (byte) 0b100000000);
 			Memory.write(shKBDCR , (byte) 0b10000000);
