@@ -4,10 +4,10 @@ public class CPU6502 {
 
 	public class Opcode {
 
-		private String szOperation;
-		private String szAddressingMode;
+		private final String szOperation;
+		private final String szAddressingMode;
 
-		private int iOpcodeClockCycles;
+		private final int iOpcodeClockCycles;
 
 		public Opcode(String szOpcodeOperation , String szOpcodeAddressingMode , int iOpcodeClockCycles)
 		{
@@ -104,7 +104,7 @@ public class CPU6502 {
 		}
 
 		//Opcodes ordered alphabetically from A-Z:
-		
+
 		//OpcodeMatrix[0x-LoNibble-HiNibble] = new Opcode("Operation" , "AddressingMode" , DefaultNumberOfCycles);
 
 		//ADC
@@ -414,20 +414,19 @@ public class CPU6502 {
 	private void interrupt()
 	{	
 		incrementPC();
-		
+
 		Memory.write((short) getSP(), (byte) (shProgramCounter >> 8));
 		byStackPointer--;
 
 		Memory.write((short) getSP(), (byte) (shProgramCounter));
 		byStackPointer--;
-		
-		setStatusFlag('I' , true);
-		
-		Memory.write((short) getSP() , byStatusFlags);
+
+		Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00010000));
 		byStackPointer--;
 
-		nmiVector();
-		//irqVector();
+		setStatusFlag('I' , true);
+
+		irqVector();
 
 	}
 
@@ -449,10 +448,10 @@ public class CPU6502 {
 
 	public void resetVector()
 	{
-		resetCPU();
-
-		byStackPointer = (byte) 0xFD;
-		byStatusFlags = (byte) (0x00 | (getStatusFlag('-') ? 0b00000100 : 0));
+		//		resetCPU();
+		//
+		//		byStackPointer = (byte) 0xFD;
+		//		byStatusFlags = (byte) (0x00 | (getStatusFlag('-') ? 0b00000100 : 0));
 
 		shProgramCounter = getVector((short) 0xFFFC , (short) 0xFFFD);
 
@@ -637,7 +636,7 @@ public class CPU6502 {
 
 		break;
 		//UNUSED
-		case('U'):
+		case('-'):
 			byStatusFlags = setBit(byStatusFlags , 5 , bBit);
 
 		break;
@@ -675,7 +674,7 @@ public class CPU6502 {
 			return getBit(byStatusFlags , 4);
 
 		//UNUSED
-		case('U'):
+		case('-'):
 			return getBit(byStatusFlags , 5);
 
 		case('O'):
@@ -705,13 +704,13 @@ public class CPU6502 {
 
 	private int binaryToBCD(byte byByte) 
 	{
-			return (((byByte / 10) % 10) << 4) | (byByte % 10);
+		return (((byByte / 10) % 10) << 4) | (byByte % 10);
 
 	}
 
 	private int bcdToBinary(byte byByte) 
 	{
-		return ((byByte >> 4) * 10) + (byByte & 0xf);
+		return ((byByte >> 4) * 10) + (byByte & 0xF);
 
 	}
 
@@ -721,27 +720,24 @@ public class CPU6502 {
 
 	public void executeInstruction()
 	{
-		byte byInstruction = (byte) 0x00;
-
+		byte byOpcode = (byte) 0x00;
 		short shOperand = (short) 0x0000;
+		lCurrentClockCycles = 0;
 
-		byHiByte = 0x00;
-		byLoByte = 0x00;
+		//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
 
-				//System.out.print(Integer.toHexString(Short.toUnsignedInt(shProgramCounter)).toUpperCase() + "	:   ");
-
-		byInstruction = fetchInstruction();
+		byOpcode = fetchInstruction();
 		incrementPC();
 
-				//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
+		//System.out.print(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation() + " ");
 
-		shOperand = getOperand(byInstruction , shOperand);
+		shOperand = getOperand(byOpcode , shOperand);
 
-				//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
+		//System.out.println(Integer.toHexString(Short.toUnsignedInt(shOperand)).toUpperCase());
 
-		executeOperation(byInstruction , shOperand);
+		executeOperation(byOpcode , shOperand);
 
-		lCurrentClockCycles = OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOpcodeClockCycles();
+		lCurrentClockCycles = lCurrentClockCycles + OpcodeMatrix[Byte.toUnsignedInt(byOpcode)].getOpcodeClockCycles();
 
 	}
 
@@ -778,6 +774,8 @@ public class CPU6502 {
 		//ZPX - Zero page, X-indexed	
 		//ZPY - Zero page, Y-indexed	
 
+		byte byOffset = 0x00;
+
 		switch(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode())
 		{
 		case("ACC"):
@@ -792,10 +790,10 @@ public class CPU6502 {
 		incrementPC();
 
 		shOperand = (short) (getLO() + 256 * getHI());
-		
-//		System.out.printf("byHiByte: %04X\n" , byHiByte); 
-//		System.out.printf("byLoByte: %04X\n" , byLoByte); 
-//		System.out.printf("shOperand: %04X\n" , shOperand); 
+
+		//		System.out.printf("byHiByte: %04X\n" , byHiByte); 
+		//		System.out.printf("byLoByte: %04X\n" , byLoByte); 
+		//		System.out.printf("shOperand: %04X\n" , shOperand); 
 
 
 		break;
@@ -831,7 +829,6 @@ public class CPU6502 {
 
 		break;
 		case("IMP"):
-			//Completed
 
 			break;
 		case("IND"):
@@ -840,21 +837,14 @@ public class CPU6502 {
 
 		byHiByte = (byte) Memory.read(shProgramCounter);
 		incrementPC();
-		
-		short shPointer = (short) (getHI() * 256 + getLO());
-		
-//		if((shPointer & 0x00FF) == 0x00FF) 
-//		{
-//			shPointer = (short) (shPointer - 0x00FF);
-//			shPointer = (short) (shPointer + 0x0100);
-//		
-//		}
-		
-		shOperand = (short) (Memory.read((short) (shPointer + 1)) * 256 + Memory.read((short) (shPointer)));
-		
+
+		short shPointerHigh = (short) (getHI() * 256);
+
+		shOperand = (short) ((Memory.read((short) (shPointerHigh + ((getLO() + 1) & 0xFF))) << 8) + Memory.read((short) (shPointerHigh + getLO())));
+
 		break;
 		case("XIN"):
-			byte byOffset = (byte) Memory.read(shProgramCounter);
+			byOffset = (byte) Memory.read(shProgramCounter);
 		incrementPC();
 
 		byLoByte = (byte) Memory.read((short) ((byOffset + getX()) & 0x00FF));
@@ -951,6 +941,8 @@ public class CPU6502 {
 	private void executeOperation(byte byInstruction , short shAddress)
 	{
 		byte byFetchedOperand = (byte) 0x00;
+		short shShift = (byte) 0x0000;;
+		byte byCompare = (byte) 0x00;;
 
 		switch(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getOperation())
 		{
@@ -970,24 +962,22 @@ public class CPU6502 {
 
 		break;
 		case("ASL"):
-			short shShiftingOperand;
+			shShift = (short) getOperandData(byInstruction , shAddress);
 
-		shShiftingOperand = (short) getOperandData(byInstruction , shAddress);
+		shShift = (short) (shShift << 1);
 
-		shShiftingOperand = (short) (shShiftingOperand << 1);
-
-		setStatusFlag('C' , ((shShiftingOperand & 0b0000000100000000) == 0b0000000100000000));
-		checkZero((byte) shShiftingOperand);
-		checkNegative((byte) shShiftingOperand);
+		setStatusFlag('C' , ((shShift & 0b0000000100000000) == 0b0000000100000000));
+		checkZero((byte) shShift);
+		checkNegative((byte) shShift);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) shShiftingOperand;
+			byAccumulator = (byte) shShift;
 
 		}
 		else
 		{
-			Memory.write(shAddress , (byte) shShiftingOperand);
+			Memory.write(shAddress , (byte) shShift);
 
 		}
 
@@ -1061,7 +1051,7 @@ public class CPU6502 {
 
 		break;
 		case("BRK"):
-		interrupt();
+			interrupt();
 
 		break;
 		case("BVC"):
@@ -1090,6 +1080,7 @@ public class CPU6502 {
 		break;
 		case("CLD"):
 			setStatusFlag('D' , false);
+		System.out.println("WARNING!!! Decimal mode UNSET.");
 
 		break;
 		case("CLI"):
@@ -1101,36 +1092,34 @@ public class CPU6502 {
 
 		break;
 		case("CMP"):
-			byte byCompareResult;
+			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
-		byFetchedOperand = getOperandData(byInstruction , shAddress);	
-
-		byCompareResult = (byte) (getA() - Byte.toUnsignedInt(byFetchedOperand));
+		byCompare = (byte) (getA() - Byte.toUnsignedInt(byFetchedOperand));
 
 		setStatusFlag('C' , (Byte.toUnsignedInt(byFetchedOperand) <= getA()));
-		checkZero(byCompareResult);
-		checkNegative(byCompareResult);
+		checkZero(byCompare);
+		checkNegative(byCompare);
 
 		break;
 		case("CPX"):
 			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
-		byCompareResult = (byte) (getX() - Byte.toUnsignedInt(byFetchedOperand));
+		byCompare = (byte) (getX() - Byte.toUnsignedInt(byFetchedOperand));
 
 		setStatusFlag('C' , (Byte.toUnsignedInt(byFetchedOperand) <= getX()));
-		checkZero(byCompareResult);
-		checkNegative(byCompareResult);
+		checkZero(byCompare);
+		checkNegative(byCompare);
 
 
 		break;
 		case("CPY"):
 			byFetchedOperand = getOperandData(byInstruction , shAddress);	
 
-		byCompareResult = (byte) (getY() - Byte.toUnsignedInt(byFetchedOperand));
+		byCompare = (byte) (getY() - Byte.toUnsignedInt(byFetchedOperand));
 
 		setStatusFlag('C' , (Byte.toUnsignedInt(byFetchedOperand) <= getY()));
-		checkZero(byCompareResult);
-		checkNegative(byCompareResult);
+		checkZero(byCompare);
+		checkNegative(byCompare);
 
 
 		break;
@@ -1194,15 +1183,21 @@ public class CPU6502 {
 
 		break;
 		case("JSR"):
-			shProgramCounter--;
+			shProgramCounter = (short) (shProgramCounter - 2);
 
-		Memory.write((short) getSP() , (byte) ((shProgramCounter >>> 8) & 0x00FF));
+		byLoByte = (byte) Memory.read(shProgramCounter);
+		incrementPC();
+
+		Memory.write((short) getSP() , (byte) ((shProgramCounter >> 8) & 0x00FF));
 		byStackPointer--;
 
 		Memory.write((short) getSP() , (byte) (shProgramCounter & 0x00FF));
 		byStackPointer--;
 
-		shProgramCounter = shAddress;
+		byHiByte = (byte) Memory.read(shProgramCounter);
+		incrementPC();
+
+		shProgramCounter = (short) (getHI() * 256 + getLO());
 
 		break;
 		case("LDA"):
@@ -1238,18 +1233,18 @@ public class CPU6502 {
 			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
 		setStatusFlag('C',(byFetchedOperand & 0x0001) == 0x0001);
-		short temp = (short)((0x00FF & byFetchedOperand) >> 1);
-		setStatusFlag('Z',(temp & 0x00FF)==0x0000);
-		setStatusFlag('N',(temp & 0x0080)==0x0080);
+		shShift = (short)((0x00FF & byFetchedOperand) >> 1);
+		setStatusFlag('Z',(shShift & 0x00FF)==0x0000);
+		setStatusFlag('N',(shShift & 0x0080)==0x0080);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) temp;
+			byAccumulator = (byte) shShift;
 
 		}
 		else
 		{
-			Memory.write(shAddress , (byte) temp);
+			Memory.write(shAddress , (byte) shShift);
 
 		}
 
@@ -1271,7 +1266,7 @@ public class CPU6502 {
 			Memory.write((short) getSP() , byAccumulator);
 
 		byStackPointer--;
-		
+
 		break;
 		case("PHP"):
 			Memory.write((short) getSP() , (byte) (byStatusFlags | 0b00110000));
@@ -1293,66 +1288,64 @@ public class CPU6502 {
 
 		byStatusFlags = (byte) Memory.read((short) getSP());
 
-		setStatusFlag('U' , true);
+		setStatusFlag('-' , true);
 		setStatusFlag('B' , false);
 
 		break;
 		case("ROL"):
 
-			shShiftingOperand = (short) getOperandData(byInstruction , shAddress);
+			shShift = (short) getOperandData(byInstruction , shAddress);
 
-		shShiftingOperand = (short) (shShiftingOperand << 1);
+		shShift = (short) (shShift << 1);
 
-		boolean byTemp = ((shShiftingOperand & 0b0000000100000000) == 0b0000000100000000);
-		shShiftingOperand = setBit((byte) shShiftingOperand , 0 , getStatusFlag('C'));
+		boolean byTemp = ((shShift & 0b0000000100000000) == 0b0000000100000000);
+		shShift = setBit((byte) shShift , 0 , getStatusFlag('C'));
 		setStatusFlag('C' , byTemp);
 
-		checkZero((byte) shShiftingOperand);
-		checkNegative((byte) shShiftingOperand);
+		checkZero((byte) shShift);
+		checkNegative((byte) shShift);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) shShiftingOperand;
+			byAccumulator = (byte) shShift;
 
 		}
 		else
 		{
-			Memory.write(shAddress , (byte) shShiftingOperand);
+			Memory.write(shAddress , (byte) shShift);
 
 		}
 
 		break;
 		case("ROR"):
-			byte byShiftingOperand = getOperandData(byInstruction , shAddress);
+			byFetchedOperand = getOperandData(byInstruction , shAddress);
 
-	 temp = (short)(((0x00FF&byShiftingOperand)>>1) | (short)(getStatusFlag('C') ? 0x0080 : 0));
+		shShift = (short)(((0x00FF&byFetchedOperand)>>1) | (short)(getStatusFlag('C') ? 0x0080 : 0));
 
-		setStatusFlag('C',(byShiftingOperand & 0x01) == 0x01);
-		setStatusFlag('Z',(temp & 0x00FF) == 0x0000);
-		setStatusFlag('N',(temp & 0x0080) == 0x0080);
+		setStatusFlag('C',(byFetchedOperand & 0x01) == 0x01);
+		setStatusFlag('Z',(shShift & 0x00FF) == 0x0000);
+		setStatusFlag('N',(shShift & 0x0080) == 0x0080);
 
 		if(OpcodeMatrix[Byte.toUnsignedInt(byInstruction)].getAddressingMode().equalsIgnoreCase("ACC"))
 		{
-			byAccumulator = (byte) temp;
+			byAccumulator = (byte) shShift;
 
 		}
 		else
 		{
-			Memory.write(shAddress , (byte) temp);
+			Memory.write(shAddress , (byte) shShift);
 
 		}
 
 		break;
-		case("RTI"):
+		case("RTI"):	
 			byStackPointer++;
-			
-			byStatusFlags = (byte) Memory.read((short) getSP());
-			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('B') ? 0b11101111 : 0));
-			byStatusFlags = (byte)(byStatusFlags & (getStatusFlag('-') ? 0b11011111 : 0));
 
-			byStackPointer++;
+		byStatusFlags = (byte) ((byStatusFlags & 0b00110000) | (Memory.read((short) getSP()) & 0b11001111));
+
+		byStackPointer++;
 		byLoByte = (byte) Memory.read((short) getSP());
-		
+
 		byStackPointer++;
 		byHiByte = (byte) Memory.read((short) getSP());
 
@@ -1361,7 +1354,7 @@ public class CPU6502 {
 		break;
 		case("RTS"):
 			byStackPointer++;
-			byLoByte = (byte) Memory.read((short) getSP());
+		byLoByte = (byte) Memory.read((short) getSP());
 
 		byStackPointer++;
 		byHiByte = (byte) Memory.read((short) getSP());
@@ -1383,6 +1376,7 @@ public class CPU6502 {
 		break;
 		case("SED"):
 			setStatusFlag('D' , true);
+		System.out.println("WARNING!!! Decimal mode SET.");
 
 		break;
 		case("SEI"):
@@ -1454,28 +1448,38 @@ public class CPU6502 {
 		}
 
 	}
-	
+
 	private byte add(byte byFetchedByte) 
 	{
 		if(getStatusFlag('D') == true)
 		{
-			byFetchedByte = (byte) bcdToBinary(byFetchedByte);
-		}
-		
-		short shAdcTemp = (short) ((short) getA() + (byFetchedByte & 0xFF) + (getStatusFlag('C') ? 1 : 0));
+			byFetchedByte = (byte) (bcdToBinary(byAccumulator) +  bcdToBinary(byFetchedByte) + (getStatusFlag('C') ? 1 : 0));
 
-		setStatusFlag('C' , shAdcTemp > 255);
-		setStatusFlag('Z' , (shAdcTemp & 0x00FF) == 0);
-		setStatusFlag('N' , (shAdcTemp & 0x80) == 0x80);
-		setStatusFlag('O' , (~((short) byAccumulator ^ (short) byFetchedByte) & ((short) byAccumulator ^ (short) shAdcTemp) & 0x0080) == 0x0080);
-		
-		if(getStatusFlag('D') == true)
-		{
-			shAdcTemp = (short) binaryToBCD((byte) shAdcTemp);
+			System.out.println("1 : " + Integer.toHexString(Byte.toUnsignedInt(byFetchedByte)));
+
+			setStatusFlag('C' , Byte.toUnsignedInt(byFetchedByte) > 99);
+			byAccumulator = (byte) binaryToBCD(byFetchedByte);
+			checkZero(byFetchedByte);
+			checkNegative(byFetchedByte);
+
+			System.out.println("Decimal mode USED.");
+
+			return (byte) (byFetchedByte);
+
 		}
-		
-		return (byte) shAdcTemp;
-		
+		else
+		{
+			short shAddTemp = (short) ((short) getA() + (byFetchedByte & 0xFF) + (getStatusFlag('C') ? 1 : 0));
+
+			setStatusFlag('C' , shAddTemp > 255);
+			setStatusFlag('Z' , (shAddTemp & 0x00FF) == 0);
+			setStatusFlag('N' , (shAddTemp & 0x80) == 0x80);
+			setStatusFlag('O' , (~((short) byAccumulator ^ (short) byFetchedByte) & ((short) byAccumulator ^ (short) shAddTemp) & 0x0080) == 0x0080);
+
+			return (byte) shAddTemp;
+
+		}
+
 	}
 
 }

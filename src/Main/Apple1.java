@@ -111,8 +111,6 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				System.out.println("Power ON pressed!");
-
 				if (bEmulatorRunning == false)
 				{
 					EmulatorThread = new Thread(MainPowerOn);
@@ -120,10 +118,6 @@ public class Apple1 extends JPanel{
 					bEmulatorRunning = true;
 					EmulatorThread.start();
 
-				}
-				else
-				{
-					System.err.println("EMULATOR ALREADY RUNNING!");
 				}
 
 				OnButton.setVisible(false);
@@ -137,8 +131,6 @@ public class Apple1 extends JPanel{
 		{
 			public void actionPerformed(ActionEvent e) 
 			{			
-				System.out.println("Power OFF pressed!");
-
 				bEmulatorRunning = false;
 
 				Screen.setCleared(true);
@@ -185,8 +177,6 @@ public class Apple1 extends JPanel{
 			{
 				if(bEmulatorPaused == false && bEmulatorRunning == true)
 				{
-					System.out.println("RESET");
-
 					Screen.resetMonitor();
 					Screen.setCursorActive(true);
 
@@ -208,8 +198,6 @@ public class Apple1 extends JPanel{
 			{
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					System.out.println("CLEAR SCREEN");
-
 					Screen.resetMonitor();
 					Screen.setCleared(true);
 					Screen.setCursorActive(true);
@@ -394,17 +382,14 @@ public class Apple1 extends JPanel{
 								{	
 									ByteStream.write(Storage.getMemoryByteStream(shStartAddressValid , shEndAddressValid));
 
-									System.out.println(SaveFile);
-									System.out.println(FileUI.getSelectedFile());
-
 									JOptionPane.showMessageDialog(SaveInterfaceFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
 
 								} 
 								catch (IOException e1) 
 								{
-									e1.printStackTrace();
-									System.err.println("Error writing bytes to file: " + e1.getMessage());
-
+									JOptionPane.showMessageDialog(SaveInterfaceFrame , "File error!\n" + e1.getMessage());
+									SaveInterfaceFrame.setVisible(false);
+									
 								}
 
 							}
