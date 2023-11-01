@@ -702,15 +702,15 @@ public class CPU6502 {
 
 	}
 
-	private int binaryToBCD(byte byByte) 
+	private byte binaryToBCD(byte byByte) 
 	{
-		return (((byByte / 10) % 10) << 4) | (byByte % 10);
+		return (byte) ((((Byte.toUnsignedInt(byByte) / 10) % 10) << 4) | (Byte.toUnsignedInt(byByte) % 10));
 
 	}
 
-	private int bcdToBinary(byte byByte) 
+	private byte bcdToBinary(byte byByte) 
 	{
-		return ((byByte >> 4) * 10) + (byByte & 0xF);
+		return (byte) (((Byte.toUnsignedInt(byByte) >> 4) * 10) + (Byte.toUnsignedInt(byByte) & 0xF));
 
 	}
 
@@ -1451,25 +1451,36 @@ public class CPU6502 {
 
 	private byte add(byte byFetchedByte) 
 	{
+		short shAddTemp;
+		
 		if(getStatusFlag('D') == true)
 		{
-			byFetchedByte = (byte) (bcdToBinary(byAccumulator) +  bcdToBinary(byFetchedByte) + (getStatusFlag('C') ? 1 : 0));
+			System.out.println("1.1 : BCD" + Integer.toBinaryString(byAccumulator));
+			System.out.println("1.1 : BIN" + Integer.toBinaryString(bcdToBinary(byAccumulator)));
+			System.out.println("1.2 : BCD" + Integer.toBinaryString(byFetchedByte));
+			System.out.println("1.2 : BIN" + Integer.toBinaryString(bcdToBinary(byFetchedByte)));
+			
+			shAddTemp = (byte) Byte.toUnsignedInt((byte) (Byte.toUnsignedInt(bcdToBinary(byAccumulator)) +  Byte.toUnsignedInt(bcdToBinary(byFetchedByte)) + (getStatusFlag('C') ? 1 : 0)));
 
-			System.out.println("1 : " + Integer.toHexString(Byte.toUnsignedInt(byFetchedByte)));
+			System.out.println("2 : " + Integer.toBinaryString(Byte.toUnsignedInt(byFetchedByte)));
 
-			setStatusFlag('C' , Byte.toUnsignedInt(byFetchedByte) > 99);
-			byAccumulator = (byte) binaryToBCD(byFetchedByte);
+			setStatusFlag('C' , Byte.toUnsignedInt((byte) shAddTemp) > 99);
+						
+			setStatusFlag('O' , (~((short) bcdToBinary(byAccumulator) ^ (short) bcdToBinary(byFetchedByte)) & ((short) bcdToBinary(byAccumulator) ^ (short) shAddTemp) & 0x0080) == 0x0080);
+			
+			byFetchedByte = (byte) binaryToBCD((byte) shAddTemp);
+			
 			checkZero(byFetchedByte);
 			checkNegative(byFetchedByte);
 
 			System.out.println("Decimal mode USED.");
-
+			
 			return (byte) (byFetchedByte);
 
 		}
 		else
 		{
-			short shAddTemp = (short) ((short) getA() + (byFetchedByte & 0xFF) + (getStatusFlag('C') ? 1 : 0));
+			shAddTemp = (short) ((short) getA() + (byFetchedByte & 0xFF) + (getStatusFlag('C') ? 1 : 0));
 
 			setStatusFlag('C' , shAddTemp > 255);
 			setStatusFlag('Z' , (shAddTemp & 0x00FF) == 0);

@@ -395,7 +395,7 @@ public class Apple1 extends JPanel{
 							}
 							else
 							{
-								JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+								JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nYou need to select a save file to");
 								SaveInterfaceFrame.setVisible(false);
 
 							}
@@ -403,7 +403,7 @@ public class Apple1 extends JPanel{
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+							JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nThe start address is bigger than the end address");
 							SaveInterfaceFrame.setVisible(false);
 
 						}
@@ -411,7 +411,7 @@ public class Apple1 extends JPanel{
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nAddresses not saved successfully");
+						JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nPlease make sure you are writing the addresses as a 4 digit hexadecimal number\neg. E000 or 0280");
 						SaveInterfaceFrame.setVisible(false);
 
 					}

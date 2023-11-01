@@ -27,6 +27,10 @@ public class debugCPU
 	private int iTestsRan;
 	private int iTestsPassed;
 	
+	private long lTotal;
+	private long lPassed;
+	private long lFailed;
+	
 	private RAM Memory;
 	private CPU6502 CPU;
 	
@@ -68,6 +72,7 @@ public class debugCPU
 		}
 		System.out.println("Testing completed!");
 		System.out.println("Passed " + iTestsPassed + "/" + iTestsRan + " tests.");
+		System.out.println("Failed " + lFailed + "/" + lTotal + " total opcode tests ran.");
 		
 		szKeyboard.close();
 		iKeyboard.close();
@@ -215,17 +220,25 @@ public class debugCPU
 				if (this.bTestPass && this.iVerbosity == 1)
 				{
 					System.out.println("Test: " + testCase[j].getName() + " - " + "PASSED!");
+					
+					lTotal++;
+					
 				}
 				else if (this.bTestPass == false && this.iVerbosity == 1)
 				{
 					System.out.println("Test: " + testCase[j].getName() + " - " + "FAIL!");
 					this.bOverallPass = false;
+					
+					lFailed++;
+					lTotal++;
+					
 				}
 				else if (this.bTestPass == false && this.iVerbosity == 2)
 				{
 					this.log = "Discrepancies detected in below test!" + "\n" + log;
 					System.out.print(this.log);
 					this.bOverallPass = false;
+					
 				}
 			}
 			
@@ -238,10 +251,17 @@ public class debugCPU
 			{
 				System.out.println(Integer.toHexString(iSelection).toUpperCase() + ".json - " + CPU.OpcodeMatrix[iSelection].getOperation() + " " + CPU.OpcodeMatrix[iSelection].getAddressingMode() + " - PASSED!");
 				iTestsPassed++;
+				
+				lTotal++;
+				
 			}
 			else if (this.bOverallPass == false)
 			{
 				System.out.println(Integer.toHexString(iSelection).toUpperCase() + ".json - " + CPU.OpcodeMatrix[iSelection].getOperation() + " " + CPU.OpcodeMatrix[iSelection].getAddressingMode() + " - FAIL!");
+			
+				lFailed++;
+				lTotal++;
+			
 			}
 			
 			if (this.iVerbosity != 0)
