@@ -11,9 +11,7 @@ public class ACI extends ROM {
 		super(iSizeInBytes , szFileName);
 		
 		Memory = activeMemory;
-		
-		Memory.bootstrapROM(getROM() , (short) 0xC100);
-		
+				
 	} 
 	
 	public void loadFileCassette(String szFileName , int iFileSize ,  short shLocation) 

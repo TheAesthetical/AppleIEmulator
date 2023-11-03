@@ -72,11 +72,11 @@ public class Apple1 extends JPanel{
 	private RAM Memory;
 	private CPU6502 CPU;
 	private PIA6820 PIA;
-	private ROM StorageROM;
+	private ROM WozmonROM;
 	private ACI Storage;
 
-	private boolean bEmulatorPaused;
-	private boolean bEmulatorRunning;
+	private boolean bEmulatorPaused = false;
+	private boolean bEmulatorRunning = false;
 
 	private Thread EmulatorThread;
 
@@ -89,11 +89,11 @@ public class Apple1 extends JPanel{
 		createMainGUI("Apple 1 Emulator");
 
 		Memory = new RAM(65536);
-		StorageROM = new ROM(256 , "ROM.bin");
+		WozmonROM = new ROM(256 , "\\roms\\WOZMON.bin");
 
 		CPU = new CPU6502(Memory);
 
-		Storage = new ACI(256 , "ACI.bin" , Memory);
+		Storage = new ACI(256 , "\\roms\\ACI.bin" , Memory);
 		PIA = new PIA6820(Memory , Screen);
 
 		startEmulator();
@@ -228,7 +228,7 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadFileCassette("E000INTEGERBASIC.bin" , 4096 , (short) 0xE000);
+					Storage.loadFileCassette("\\roms\\E000INTEGERBASIC.bin" , 4096 , (short) 0xE000);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Integer BASIC bootstrapped to memory at address E000");
 
@@ -244,7 +244,7 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadFileCassette("0280APPLE30TH.bin" , 3456 , (short) 0x0280);
+					Storage.loadFileCassette("\\roms\\0280APPLE30TH.bin" , 3456 , (short) 0x0280);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Apple's 30th bootstrapped to memory at address 0280");
 
@@ -260,7 +260,7 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadFileCassette("0300MICROCHESS.bin" , 2248 , (short) 0x0300);
+					Storage.loadFileCassette("\\roms\\0300MICROCHESS.bin" , 2248 , (short) 0x0300);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Microchess bootstrapped to memory at address 0300");
 
@@ -276,7 +276,7 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadFileCassette("0300LUNARLANDER.bin" , 1721 , (short) 0x0300);
+					Storage.loadFileCassette("\\roms\\0300LUNARLANDER.bin" , 1721 , (short) 0x0300);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Lunar Lander bootstrapped to memory at address 0300");
 
@@ -292,8 +292,8 @@ public class Apple1 extends JPanel{
 			{	
 				if(bEmulatorPaused == false && bEmulatorRunning == true)				
 				{
-					Storage.loadFileCassette("0280CODEBREAKER1.bin" , 2432 , (short) 0x0280);
-					Storage.loadFileCassette("E000CODEBREAKER2.bin" , 4096 , (short) 0xE000);
+					Storage.loadFileCassette("\\roms\\0280CODEBREAKER1.bin" , 2432 , (short) 0x0280);
+					Storage.loadFileCassette("\\roms\\E000CODEBREAKER2.bin" , 4096 , (short) 0xE000);
 
 					JOptionPane.showMessageDialog(Screen.getScreen() , "Codebreaker bootstrapped to memory at address 0280");
 
@@ -382,12 +382,13 @@ public class Apple1 extends JPanel{
 								{	
 									ByteStream.write(Storage.getMemoryByteStream(shStartAddressValid , shEndAddressValid));
 
-									JOptionPane.showMessageDialog(SaveInterfaceFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile + ".bin");
+									JOptionPane.showMessageDialog(SaveInterfaceFrame , "Memory addresses saved successfully!\nTo file: " + SaveFile);
 
 								} 
 								catch (IOException e1) 
 								{
-									JOptionPane.showMessageDialog(SaveInterfaceFrame , "File error!\n" + e1.getMessage());
+									e1.printStackTrace();
+									JOptionPane.showMessageDialog(SaveInterfaceFrame , "File writing Error!\n" + e1.getMessage());
 									SaveInterfaceFrame.setVisible(false);
 									
 								}
@@ -395,7 +396,7 @@ public class Apple1 extends JPanel{
 							}
 							else
 							{
-								JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nYou need to select a save file to");
+								JOptionPane.showMessageDialog(SaveInterfaceFrame , "File Error!\nYou need to select a save file");
 								SaveInterfaceFrame.setVisible(false);
 
 							}
@@ -403,7 +404,7 @@ public class Apple1 extends JPanel{
 						}
 						else
 						{
-							JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nThe start address is bigger than the end address");
+							JOptionPane.showMessageDialog(SaveInterfaceFrame , "Input Error!\nThe start address is bigger than the end address");
 							SaveInterfaceFrame.setVisible(false);
 
 						}
@@ -411,7 +412,7 @@ public class Apple1 extends JPanel{
 					}
 					else
 					{
-						JOptionPane.showMessageDialog(SaveInterfaceFrame , "Error!\nPlease make sure you are writing the addresses as a 4 digit hexadecimal number\neg. E000 or 0280");
+						JOptionPane.showMessageDialog(SaveInterfaceFrame , "Input Error!\nPlease make sure your inputted addresses are 4 digit hexadecimal values\neg. E000 or 0280");
 						SaveInterfaceFrame.setVisible(false);
 
 					}
@@ -483,7 +484,8 @@ public class Apple1 extends JPanel{
 
 	private void initaliseMemory()
 	{
-		Memory.bootstrapROM(StorageROM.getROM() , (short) 0xFF00);
+		Memory.bootstrapROM(WozmonROM.getROM() , (short) 0xFF00);
+		Memory.bootstrapROM(Storage.getROM() , (short) 0xC100);
 
 	}
 

@@ -702,9 +702,27 @@ public class CPU6502 {
 
 	}
 
-	private byte binaryToBCD(byte byByte) 
+	private byte binaryToBCD(byte byBinary) 
 	{
-		return (byte) ((((Byte.toUnsignedInt(byByte) / 10) % 10) << 4) | (Byte.toUnsignedInt(byByte) % 10));
+		//		return (byte) ((((Byte.toUnsignedInt(byByte) / 10) % 10) << 4) | (Byte.toUnsignedInt(byByte) % 10));
+
+		byte byBCD = 0;
+		int shift = 0;
+
+		while (byBinary != 0) 
+		{
+			int digit = byBinary % 10;
+			int temp = byBCD >> 1;
+
+			if (digit >= 5) temp = temp + 8;
+
+			byBCD = (byte) (temp + (shift << 4));
+			byBinary = (byte) (byBinary / 10);
+			shift++;
+			
+		}
+
+		return byBCD;
 
 	}
 
@@ -1452,29 +1470,29 @@ public class CPU6502 {
 	private byte add(byte byFetchedByte) 
 	{
 		short shAddTemp;
-		
+
 		if(getStatusFlag('D') == true)
 		{
 			System.out.println("1.1 : BCD" + Integer.toBinaryString(byAccumulator));
 			System.out.println("1.1 : BIN" + Integer.toBinaryString(bcdToBinary(byAccumulator)));
 			System.out.println("1.2 : BCD" + Integer.toBinaryString(byFetchedByte));
 			System.out.println("1.2 : BIN" + Integer.toBinaryString(bcdToBinary(byFetchedByte)));
-			
+
 			shAddTemp = (byte) Byte.toUnsignedInt((byte) (Byte.toUnsignedInt(bcdToBinary(byAccumulator)) +  Byte.toUnsignedInt(bcdToBinary(byFetchedByte)) + (getStatusFlag('C') ? 1 : 0)));
 
 			System.out.println("2 : " + Integer.toBinaryString(Byte.toUnsignedInt(byFetchedByte)));
 
 			setStatusFlag('C' , Byte.toUnsignedInt((byte) shAddTemp) > 99);
-						
+
 			setStatusFlag('O' , (~((short) bcdToBinary(byAccumulator) ^ (short) bcdToBinary(byFetchedByte)) & ((short) bcdToBinary(byAccumulator) ^ (short) shAddTemp) & 0x0080) == 0x0080);
-			
+
 			byFetchedByte = (byte) binaryToBCD((byte) shAddTemp);
-			
+
 			checkZero(byFetchedByte);
 			checkNegative(byFetchedByte);
 
 			System.out.println("Decimal mode USED.");
-			
+
 			return (byte) (byFetchedByte);
 
 		}

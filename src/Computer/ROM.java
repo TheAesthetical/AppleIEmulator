@@ -4,6 +4,8 @@ import Main.Utilities;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 public class ROM {
 
 	private Utilities Utils = new Utilities();
@@ -21,6 +23,7 @@ public class ROM {
 		catch (IOException e) 
 		{
 			e.printStackTrace();
+			System.err.println("File error when trying to get ROM!\n" + e.getMessage());
 
 		}
 
