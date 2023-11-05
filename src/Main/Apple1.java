@@ -37,7 +37,7 @@ public class Apple1 extends JPanel{
 
 	private Utilities Utils = new Utilities();
 
-	private ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\windowfavicon.png");
+	private ImageIcon WindowFavicon = new ImageIcon(Utils.getDirectoryName() + "\\a1favicon.png");
 
 	private JMenuItem OnButton;
 	private JMenuItem OffButton;
@@ -97,7 +97,7 @@ public class Apple1 extends JPanel{
 		PIA = new PIA6820(Memory , Screen);
 
 		startEmulator();
-
+		
 	}
 
 	private void startEmulator()
